@@ -1,0 +1,88 @@
+site_name: 📝 CTF Write-ups
+site_description: >-
+  Penetration testing write-ups for Hack The Box and TryHackMe machines,
+  organized by platform and difficulty.
+site_url: https://xxdndxx.github.io/ctf-writeups/
+repo_url: https://github.com/xXDNDXx/ctf-writeups
+repo_name: xXDNDXx/ctf-writeups
+edit_uri: edit/main/
+
+# Site source lives in docs/ (writeups + homepage); hooks and config stay at root.
+docs_dir: docs
+site_dir: site
+
+theme:
+  name: material
+  palette:
+    # Dark scheme matching the hand-built walkthrough theme
+    scheme: slate
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.indexes
+    - navigation.top
+    - navigation.footer
+    - toc.follow
+    - search.suggest
+    - search.highlight
+    - search.share
+    - content.code.copy
+    - content.tabs.link
+  icon:
+    repo: fontawesome/brands/github
+
+extra_css:
+  - stylesheets/custom.css
+
+extra:
+  social:
+    - icon: fontawesome/brands/github
+      link: https://github.com/xXDNDXx
+      name: GitHub
+
+hooks:
+  - hooks/callouts.py
+
+markdown_extensions:
+  - admonition
+  - attr_list
+  - md_in_html
+  - def_list
+  - tables
+  - toc:
+      permalink: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.snippets
+  - pymdownx.superfences
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - pymdownx.emoji:
+      emoji_index: !!python/name:material.extensions.emoji.twemoji
+      emoji_generator: !!python/name:material.extensions.emoji.to_svg
+
+nav:
+  - Home: README.md
+  - Contributing:
+      - contributing.md
+      - Write-up template: TEMPLATE.md
+  - HTB:
+      - HTB/README.md
+      - Easy:
+          - HTB/Easy/README.md
+          - Base: HTB/Easy/Base.md
+      - Medium: HTB/Medium/README.md
+      - Hard: HTB/Hard/README.md
+      - Insane: HTB/Insane/README.md
+  - THM:
+      - THM/README.md
+      - Easy: THM/Easy/README.md
+      - Medium: THM/Medium/README.md
+      - Hard: THM/Hard/README.md
+      - Insane: THM/Insane/README.md
+
+copyright: >
+  Educational use only. All write-ups cover retired Hack The Box machines and
+  TryHackMe rooms.
