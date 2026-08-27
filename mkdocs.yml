@@ -34,7 +34,7 @@ theme:
   font: false
 
 extra_css:
-  - stylesheets/custom.css
+  - stylesheets/walkthrough.css
 
 extra:
   social:
