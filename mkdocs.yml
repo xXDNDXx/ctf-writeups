@@ -30,6 +30,8 @@ theme:
     - content.tabs.link
   icon:
     repo: fontawesome/brands/github
+  # system fonts only (Segoe UI + Cascadia Code), no Google Fonts
+  font: false
 
 extra_css:
   - stylesheets/custom.css
