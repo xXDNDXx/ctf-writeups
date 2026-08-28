@@ -1,4 +1,7 @@
 # THM — Easy
 
-> No write-ups in this difficulty yet.
-> New write-ups will appear here as they are published.
+| Machine | Write-up |
+|---|---|
+| Source | [Source.md](Source.md) |
+
+New write-ups will appear here as they are published.

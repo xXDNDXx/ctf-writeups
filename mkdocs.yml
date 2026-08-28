@@ -80,7 +80,9 @@ nav:
       - Insane: HTB/Insane/README.md
   - THM:
       - THM/README.md
-      - Easy: THM/Easy/README.md
+      - Easy:
+          - THM/Easy/README.md
+          - Source: THM/Easy/Source.md
       - Medium: THM/Medium/README.md
       - Hard: THM/Hard/README.md
       - Insane: THM/Insane/README.md

@@ -4,7 +4,7 @@ Write-ups for TryHackMe rooms, grouped by difficulty.
 
 | Difficulty | Write-ups |
 |---|---|
-| [Easy](Easy/README.md) | 0 |
+| [Easy](Easy/README.md) | 1 |
 | [Medium](Medium/README.md) | 0 |
 | [Hard](Hard/README.md) | 0 |
 | [Insane](Insane/README.md) | 0 |
