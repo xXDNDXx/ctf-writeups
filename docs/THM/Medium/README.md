@@ -1,4 +1,7 @@
 # THM — Medium
 
-> No write-ups in this difficulty yet.
-> New write-ups will appear here as they are published.
+| Machine | Write-up |
+|---|---|
+| Support | [Support.md](Support.md) |
+
+New write-ups will appear here as they are published.

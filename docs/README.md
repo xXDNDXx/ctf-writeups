@@ -1,4 +1,4 @@
----
+﻿---
 title: Home
 hide:
   - navigation
@@ -14,7 +14,7 @@ enumerate → understand → exploit → escalate, with every command, screensho
 and the *reason* each step works.
 
 <span class="badge easy">Base — HTB Easy</span>
-<span class="badge easy">Source — THM Easy</span>
+<span class="badge medium">Support — THM Medium</span>
 <span class="badge retired">Retired machines only</span>
 <span class="badge web">Web · Linux · PrivEsc</span>
 
@@ -62,7 +62,7 @@ the same depth and methodology.
 | Platform | Machine | Difficulty | Status | Write-up |
 |---|---|---|---|---|
 | HTB | Base | <span class="badge easy">Easy</span> | Retired | [Read the walkthrough →](HTB/Easy/Base.md) |
-| THM | Source | <span class="badge easy">Easy</span> | Free room | [Read the walkthrough →](THM/Easy/Source.md) |
+| THM | Support | <span class="badge medium">Medium</span> | Premium room | [Read the walkthrough →](THM/Medium/Support.md) |
 
 ## Contribute
 
@@ -72,3 +72,4 @@ folder, and add one line to the navigation.
 
 - [Contributing guide](contributing.md) — policy, folder layout, and how to publish
 - [Write-up template](TEMPLATE.md) — the 7-section skeleton
+
