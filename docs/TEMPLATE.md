@@ -10,16 +10,19 @@
 
 ---
 
-## 1. Machine Overview & Metadata
+## 1. Challenge Overview & Metadata
 
 | Field | Value |
 |---|---|
 | **Machine** | <Machine> |
-| **Platform** | Hack The Box (retired) |
+| **Platform** | Hack The Box (retired) · TryHackMe (room) |
 | **OS** | Linux / Windows |
 | **Difficulty** | Easy / Medium / Hard / Insane |
-| **Attack Vector** | Web / SMB / … |
+| **Attack Vector** | Web / SMB / API / Active Directory / … |
 | **Key Vulnerabilities** | Bullet list of the chained bugs |
+| **Tools Used** | nmap · ffuf · Burp Suite · Metasploit · … |
+| **My Time** | Xh Ym (to user / to root) |
+| **Date** | YYYY-MM-DD |
 
 ### Attack Chain at a Glance
 
@@ -32,7 +35,9 @@ Nmap (…)
 
 ---
 
-## 2. Reconnaissance & Enumeration
+## 2. Reconnaissance
+
+**Goal:** map the attack surface before touching anything.
 
 ### 2.1 Full Nmap Scan
 
@@ -48,29 +53,55 @@ sudo nmap -sVC -A -Pn -T3 $IP
 | 80/tcp | open | http | Apache … |
 
 ```markdown
-![Caption of the screenshot](assets/<Machine>/01-nmap-scan.png)
+![Caption of the screenshot](assets/01-nmap-scan.png)
 *Caption.*
 ```
 
-### 2.2 <Enumeration area>
+### 2.2 <Secondary scan — UDP / full-range / scripts>
 
 ---
 
-## 3. Vulnerability Discovery / Source Code Review
+## 3. Enumeration
+
+**Goal:** find the crack in the attack surface. Work the findings, not the checklist.
+
+### 3.1 <Enumeration area — web fuzzing / service enum / AD>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u http://$IP/FUZZ
+```
+
+**Key discovery:** e.g. `/admin` login page running X app v1.2
+
+### 3.2 Vulnerability Discovery / Source Review
 
 > [!IMPORTANT]
 > State the core bug precisely: what is trusted that shouldn't be, and why
 > the check fails.
 
-```<language>
+```php
 // relevant source or snippet
 ```
 
 ---
 
-## 4. Initial Foothold
+## 4. Exploitation — Initial Foothold
+
+**Vulnerability class:** e.g. SQL injection (auth bypass) · file upload RCE · deserialization
 
 Step-by-step exploitation, with the request/payload and the resulting shell.
+
+```bash
+# the command that got you in
+```
+
+**Shell stabilization** (if interactive work follows):
+
+```bash
+python3 -c 'import pty; pty.spawn("/bin/bash")'   # Ctrl+Z
+stty raw -echo; fg                                 # on the attacker box
+export TERM=xterm; stty rows 40 cols 140
+```
 
 ??? success "user.txt — click to reveal"
 
@@ -82,11 +113,24 @@ Step-by-step exploitation, with the request/payload and the resulting shell.
 
 ## 5. Privilege Escalation
 
+**Goal:** root. Enumerate systematically — don't guess, verify.
+
+### 5.1 Post-Exploitation Enumeration
+
 ```bash
-sudo -l
+sudo -l                                    # sudo rights — highest-value check
+find / -perm -4000 -type f 2>/dev/null     # SUID binaries
+cat /etc/crontab; ls -la /etc/cron*        # scheduled jobs
+ss -tlnp                                   # internal services
 ```
 
-Why the misconfiguration matters, then the escalation path.
+### 5.2 The Vector
+
+Why the misconfiguration matters (GTFOBins / LolBAS reference), then the escalation path:
+
+```bash
+# privesc command
+```
 
 ??? success "root.txt — click to reveal"
 
@@ -98,15 +142,39 @@ Why the misconfiguration matters, then the escalation path.
 
 ## 6. Remediation & Hardening
 
-For each vulnerability found, one concrete fix.
+Client-ready fixes mapped to each finding — this is the section a defender reads.
 
-| Vulnerability | Fix |
-|---|---|
-| … | … |
+| # | Vulnerability | Severity | Fix |
+|---|---|:---:|---|
+| 1 | <finding> | Critical / High / Medium | one concrete fix |
+| 2 | <finding> | High | one concrete fix |
 
 ---
 
 ## 7. Lessons Learned
 
-- What made this machine interesting
-- Technique worth remembering (link it to your methodology notes)
+- **Technique internalized:** <the one concrete takeaway about the technique>
+- **Do faster next time:** <what you'd do differently>
+- **Adding to cheatsheet:** <tool/command/wordlist worth remembering>
+
+---
+
+## 8. Artifacts
+
+| Artifact | Location |
+|---|---|
+| nmap scans | `assets/` or `nmap/` |
+| exploit scripts | `exploits/` |
+| loot / evidence | `loot/` |
+
+---
+
+**Prev/next navigation** (fill in after copying into the machine folder):
+
+```markdown
+| | |
+|---|---|
+| ← Previous | [<Machine>](../<Machine>/README.md) |
+| Back to index | [All write-ups](../../../README.md) · [HTB](../../README.md) · [Easy](../README.md) |
+| Next → | *Coming soon* |
+```

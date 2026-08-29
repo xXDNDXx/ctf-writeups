@@ -1,7 +1,8 @@
-site_name: 📝 CTF Write-ups
+site_name: ">_ CTF Write-ups"
 site_description: >-
-  Penetration testing write-ups for Hack The Box and TryHackMe machines,
-  organized by platform and difficulty.
+  Methodology-first penetration testing write-ups for Hack The Box and
+  TryHackMe — every machine documented like a professional engagement:
+  enumerate → understand → exploit → escalate → report.
 site_url: https://xxdndxx.github.io/ctf-writeups/
 repo_url: https://github.com/xXDNDXx/ctf-writeups
 repo_name: xXDNDXx/ctf-writeups
@@ -13,6 +14,8 @@ site_dir: site
 
 theme:
   name: material
+  favicon: favicon.png
+  logo: logo.png
   palette:
     # Dark scheme matching the hand-built walkthrough theme
     scheme: slate
@@ -41,6 +44,12 @@ extra:
     - icon: fontawesome/brands/github
       link: https://github.com/xXDNDXx
       name: GitHub
+    - icon: fontawesome/brands/linkedin
+      link: https://www.linkedin.com/in/daniel-dayan-a66322352/
+      name: LinkedIn
+    - icon: fontawesome/solid/globe
+      link: https://xxdndxx.github.io
+      name: Portfolio
 
 hooks:
   - hooks/callouts.py
@@ -67,14 +76,12 @@ markdown_extensions:
 
 nav:
   - Home: README.md
-  - Contributing:
-      - contributing.md
-      - Write-up template: TEMPLATE.md
+  - Methodology: methodology.md
   - HTB:
       - HTB/README.md
       - Easy:
           - HTB/Easy/README.md
-          - Base: HTB/Easy/Base.md
+          - Base: HTB/Easy/Base/README.md
       - Medium: HTB/Medium/README.md
       - Hard: HTB/Hard/README.md
       - Insane: HTB/Insane/README.md
@@ -83,10 +90,14 @@ nav:
       - Easy: THM/Easy/README.md
       - Medium:
           - THM/Medium/README.md
-          - Support: THM/Medium/Support.md
+          - Support: THM/Medium/Support/README.md
       - Hard: THM/Hard/README.md
       - Insane: THM/Insane/README.md
+  - Contribute:
+      - contributing.md
+      - Write-up template: TEMPLATE.md
 
-copyright: >
-  Educational use only. All write-ups cover retired Hack The Box machines and
-  TryHackMe rooms.
+copyright: >-
+  Daniel Dayan — educational use only. All write-ups cover retired Hack The
+  Box machines and TryHackMe rooms. Nothing here may be used against systems
+  without explicit written authorization.

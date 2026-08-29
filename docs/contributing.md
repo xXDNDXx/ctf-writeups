@@ -10,38 +10,50 @@ folder layout, and the exact steps to get your write-up onto the site.
    own disclosure rules).
 2. **Spoilers stay behind a toggle.** Wrap flags in a collapsible block so
    people can attempt the machine first (snippet below).
-3. **One machine = one Markdown file**, named after the machine, with its
-   screenshots in a sibling `assets/` folder.
+3. **One machine = one folder**, containing the write-up and its evidence:
+   `README.md` plus a sibling `assets/` folder.
 4. **Explain the why.** Every command should come with a short reason — the
    goal is to teach, not just to paste output.
 
 ## Folder layout
 
+Every write-up is self-contained in its own folder — the write-up, its
+screenshots, and any scripts travel together:
+
 ```
 .
 ├── HTB/
-│   ├── Easy/
-│   │   ├── MachineName.md        ← the write-up
-│   │   └── assets/
-│   │       └── MachineName/      ← its screenshots
-│   │           ├── 01-nmap-scan.png
-│   │           └── ...
-│   ├── Medium/
-│   ├── Hard/
-│   └── Insane/
+│   └── Easy/
+│       └── Base/                 ← one folder per machine
+│           ├── README.md         ← the write-up itself
+│           ├── assets/           ← numbered screenshots
+│           │   ├── 01-nmap-scan.png
+│           │   └── 02-foo-bar.png
+│           ├── exploits/         ← optional: PoCs & scripts
+│           └── nmap/             ← optional: raw scan output
 ├── THM/
-│   ├── Easy/ … Medium/ … Hard/ … Insane/
-├── README.md                     ← site homepage
-└── mkdocs.yml                    ← navigation lives here
+│   └── Medium/
+│       └── Support/              ← same structure for rooms
+│           ├── README.md
+│           └── assets/
+└── ...
 ```
+
+**Naming conventions**
+
+| Item | Convention | Example |
+|---|---|---|
+| Machine folder | Platform's exact machine name, `PascalCase` | `Base/`, `Support/` |
+| Write-up file | always `README.md` (keeps URLs clean: `/HTB/Easy/Base/`) | `README.md` |
+| Screenshots | `NN-kebab-case-description.png`, numbered by order of use | `03-login-directory-listing.png` |
+| Exploits | `exploit-<name>.py` or platform-suggested names | `exploit-auth-bypass.py` |
 
 ## Adding a write-up, step by step
 
-1. Copy [`TEMPLATE.md`](TEMPLATE.md) to `HTB/<Difficulty>/<Machine>.md`
-   (or `THM/<Difficulty>/<Machine>.md`).
-2. Put screenshots in `HTB/<Difficulty>/assets/<Machine>/` and reference
-   them with relative paths:
-   `![Caption](assets/<Machine>/01-nmap-scan.png)`
+1. Create `HTB/<Difficulty>/<Machine>/README.md` (or `THM/<Difficulty>/<Room>/`)
+   from the [`TEMPLATE.md`](TEMPLATE.md) — the 8-section skeleton.
+2. Put screenshots in the same folder under `assets/` and reference them
+   with relative paths: `![Caption](assets/01-nmap-scan.png)`
 3. Add a nav entry in `mkdocs.yml` so the machine appears in the menu:
 
    ```yaml
@@ -49,7 +61,7 @@ folder layout, and the exact steps to get your write-up onto the site.
      - HTB:
          - Easy:
              - HTB/Easy/README.md
-             - Base: HTB/Easy/Base.md        # ← add yours like this
+             - Base: HTB/Easy/Base/README.md   # ← add yours like this
    ```
 
 4. Add the machine to the table on the platform's difficulty page
@@ -85,3 +97,13 @@ mkdocs build      # static build into site/
 - `!!! note "Title"` / `!!! warning` admonitions also work directly.
 - Collapsible `??? details "Title"` blocks for long output or flags.
 - Code fences get syntax highlighting and a copy button automatically.
+
+## Optional: regenerate branding assets
+
+The banner, logo, and social preview in `branding/` are generated with
+Pillow from `branding/make_assets.py` — adjust the script and rerun it
+whenever the identity needs a refresh:
+
+```bash
+python branding/make_assets.py   # needs: pip install pillow
+```

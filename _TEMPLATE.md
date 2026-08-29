@@ -1,76 +1,180 @@
-# [MACHINE NAME] — [Platform] · [Difficulty]
+# HTB — <Machine> | Full Walkthrough
 
-> **OS:** Linux / Windows · **Techniques:** e.g. LFI → SUID privesc
-> **Release:** YYYY-MM-DD · **My time:** Xh Ym · **Dnf:** user ✅ / root ✅
+> [!TIP]
+> **Scope note:** The target IP changes every time the machine spawns.
+> Every command below uses `$IP`, set once at the start:
+>
+> ```bash
+> export IP="<machine-ip>"
+> ```
 
 ---
 
-## 1. Recon
+## 1. Challenge Overview & Metadata
 
-```bash
-nmap -sC -sV -oN nmap/initial TARGET_IP
+| Field | Value |
+|---|---|
+| **Machine** | <Machine> |
+| **Platform** | Hack The Box (retired) · TryHackMe (room) |
+| **OS** | Linux / Windows |
+| **Difficulty** | Easy / Medium / Hard / Insane |
+| **Attack Vector** | Web / SMB / API / Active Directory / … |
+| **Key Vulnerabilities** | Bullet list of the chained bugs |
+| **Tools Used** | nmap · ffuf · Burp Suite · Metasploit · … |
+| **My Time** | Xh Ym (to user / to root) |
+| **Date** | YYYY-MM-DD |
+
+### Attack Chain at a Glance
+
+```
+Nmap (…)
+   └─> step one
+         └─> step two
+               └─> root
 ```
 
-**Findings:**
+---
 
-| Port | Service | Version | Notes |
+## 2. Reconnaissance
+
+**Goal:** map the attack surface before touching anything.
+
+### 2.1 Full Nmap Scan
+
+```bash
+sudo nmap -sVC -A -Pn -T3 $IP
+```
+
+**Why each switch:** (table or bullets explaining the flags)
+
+| Port | State | Service | Version |
 |---|---|---|---|
-| 22 | ssh | OpenSSH 8.2 | — |
-| 80 | http | nginx 1.18 | <!-- what stood out --> |
+| 22/tcp | open | ssh | OpenSSH … |
+| 80/tcp | open | http | Apache … |
 
-<!-- Add secondary scans (UDP, full-range) only if they found something. -->
-
-## 2. Enumeration
-
-<!-- What did you enumerate and WHY? Explain the reasoning, not just commands. -->
-
-```bash
-ffuf -u http://TARGET_IP/FUZZ -w /usr/share/seclists/Discovery/Web-Content/common.txt -fc 404
+```markdown
+![Caption of the screenshot](assets/01-nmap-scan.png)
+*Caption.*
 ```
 
-**Key discovery:** <!-- e.g. /admin login page running X app v1.2 -->
+### 2.2 <Secondary scan — UDP / full-range / scripts>
 
-## 3. Foothold (User)
+---
 
-<!-- The exploit. State the vulnerability class first, then show it. -->
+## 3. Enumeration
 
-**Vulnerability:** <!-- e.g. SQL injection in login form (auth bypass) -->
+**Goal:** find the crack in the attack surface. Work the findings, not the checklist.
+
+### 3.1 <Enumeration area — web fuzzing / service enum / AD>
+
+```bash
+ffuf -w /usr/share/seclists/Discovery/Web-Content/common.txt:FUZZ -u http://$IP/FUZZ
+```
+
+**Key discovery:** e.g. `/admin` login page running X app v1.2
+
+### 3.2 Vulnerability Discovery / Source Review
+
+> [!IMPORTANT]
+> State the core bug precisely: what is trusted that shouldn't be, and why
+> the check fails.
+
+```php
+// relevant source or snippet
+```
+
+---
+
+## 4. Exploitation — Initial Foothold
+
+**Vulnerability class:** e.g. SQL injection (auth bypass) · file upload RCE · deserialization
+
+Step-by-step exploitation, with the request/payload and the resulting shell.
 
 ```bash
 # the command that got you in
 ```
 
-```bash
-$ cat user.txt
-> HTB{...}
-```
-
-## 4. Privilege Escalation (Root)
-
-**Enumeration:**
+**Shell stabilization** (if interactive work follows):
 
 ```bash
-sudo -l
-find / -perm -4000 2>/dev/null
+python3 -c 'import pty; pty.spawn("/bin/bash")'   # Ctrl+Z
+stty raw -echo; fg                                 # on the attacker box
+export TERM=xterm; stty rows 40 cols 140
 ```
 
-**Vector:** <!-- e.g. sudo version vulnerable to CVE-XXXX-XXXX -->
+??? success "user.txt — click to reveal"
+
+    ```
+    <user-flag>
+    ```
+
+---
+
+## 5. Privilege Escalation
+
+**Goal:** root. Enumerate systematically — don't guess, verify.
+
+### 5.1 Post-Exploitation Enumeration
+
+```bash
+sudo -l                                    # sudo rights — highest-value check
+find / -perm -4000 -type f 2>/dev/null     # SUID binaries
+cat /etc/crontab; ls -la /etc/cron*        # scheduled jobs
+ss -tlnp                                   # internal services
+```
+
+### 5.2 The Vector
+
+Why the misconfiguration matters (GTFOBins / LolBAS reference), then the escalation path:
 
 ```bash
 # privesc command
 ```
 
-```bash
-$ cat /root/root.txt
-> HTB{...}
+??? success "root.txt — click to reveal"
+
+    ```
+    <root-flag>
+    ```
+
+---
+
+## 6. Remediation & Hardening
+
+Client-ready fixes mapped to each finding — this is the section a defender reads.
+
+| # | Vulnerability | Severity | Fix |
+|---|---|:---:|---|
+| 1 | <finding> | Critical / High / Medium | one concrete fix |
+| 2 | <finding> | High | one concrete fix |
+
+---
+
+## 7. Lessons Learned
+
+- **Technique internalized:** <the one concrete takeaway about the technique>
+- **Do faster next time:** <what you'd do differently>
+- **Adding to cheatsheet:** <tool/command/wordlist worth remembering>
+
+---
+
+## 8. Artifacts
+
+| Artifact | Location |
+|---|---|
+| nmap scans | `assets/` or `nmap/` |
+| exploit scripts | `exploits/` |
+| loot / evidence | `loot/` |
+
+---
+
+**Prev/next navigation** (fill in after copying into the machine folder):
+
+```markdown
+| | |
+|---|---|
+| ← Previous | [<Machine>](../<Machine>/README.md) |
+| Back to index | [All write-ups](../../../README.md) · [HTB](../../README.md) · [Easy](../README.md) |
+| Next → | *Coming soon* |
 ```
-
-## 5. Lessons Learned
-
-- <!-- One concrete takeaway about the technique -->
-- <!-- One thing you'd do faster next time -->
-- <!-- One tool/command you're adding to your cheatsheet -->
-
-## 6. Artifacts
-
-- [nmap scans](./nmap/) · [exploit scripts](./exploits/) · [loot](./loot/)

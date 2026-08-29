@@ -5,46 +5,25 @@ hide:
   - toc
 ---
 
-<div class="hero" markdown="1">
+# >_ CTF WRITE-UPS
 
-# 📝 CTF Write-ups
+**Methodology-first offensive security write-ups** for **Hack The Box** and **TryHackMe** — every machine documented like a professional engagement: enumerate → understand → exploit → escalate → **report**.
 
-Methodology-first walkthroughs for **Hack The Box** and **TryHackMe** machines —
-enumerate → understand → exploit → escalate, with every command, screenshot,
-and the *reason* each step works.
+I'm **Daniel Dayan**, an entry-level penetration tester with a SOC/blue-team foundation (650-hour Cisco & Fortinet program) — which means every write-up here also ships with remediation a defender can actually use.
 
-<span class="badge easy">Base — HTB Easy</span>
-<span class="badge medium">Support — THM Medium</span>
-<span class="badge retired">Retired machines only</span>
-<span class="badge web">Web · Linux · PrivEsc</span>
+[**:simple-hackthebox: Hack The Box**](HTB/README.md) · [**:simple-tryhackme: TryHackMe**](THM/README.md) · [**:material-compass: My Methodology**](methodology.md) · Retired machines only · Web · Linux · Windows · PrivEsc
 
-</div>
+---
 
-<div class="plat-grid" markdown="1">
+## :material-sword: The Approach
 
-<div class="plat-card" markdown="1">
+Every write-up in this collection follows the same professional discipline:
 
-### :simple-hackthebox: Hack The Box
-
-Retired machine write-ups, Easy → Insane. One page per machine, complete
-attack chain from the first nmap scan to root.txt.
-
-[Browse HTB →](HTB/README.md)
-
-</div>
-
-<div class="plat-card" markdown="1">
-
-### :simple-tryhackme: TryHackMe
-
-Room write-ups across every difficulty — beginner-friendly walkthroughs with
-the same depth and methodology.
-
-[Browse THM →](THM/README.md)
-
-</div>
-
-</div>
+- **Full kill chain** — first nmap scan to root shell, nothing skipped
+- **The "why" for every command** — methodology over answer-pasting
+- **Dead ends documented** — the path to the flag is the lesson
+- **Remediation for the blue team** — I know what defenders see; my fixes reflect that
+- **Flags behind spoiler toggles** — attempt the machine first, compare notes after
 
 !!! warning "Spoilers below"
 
@@ -57,19 +36,47 @@ the same depth and methodology.
     Only write-ups for **retired** Hack The Box machines are published here,
     in line with HTB's disclosure rules. No active machines, ever.
 
-## Machine index
+---
 
-| Platform | Machine | Difficulty | Status | Write-up |
-|---|---|---|---|---|
-| HTB | Base | <span class="badge easy">Easy</span> | Retired | [Read the walkthrough →](HTB/Easy/Base.md) |
-| THM | Support | <span class="badge medium">Medium</span> | Premium room | [Read the walkthrough →](THM/Medium/Support.md) |
+## Machine Index
+
+:simple-hackthebox: **Hack The Box**
+
+| Machine | Difficulty | OS | Kill chain | Status |
+|---|:---:|:---:|---|---|
+| [**Base**](HTB/Easy/Base/README.md) | :green-circle: Easy | Linux | `strcmp` type-juggling auth bypass → file upload RCE → password reuse → `sudo find` privesc | Retired |
+
+:fontawesome-regular-window-restore: **TryHackMe**
+
+| Room | Difficulty | Kill chain | Status |
+|---|:---:|---|---|
+| [**Support**](THM/Medium/Support/README.md) | :yellow_circle: Medium | hydra brute-force → forged `isITUser` role cookie → BOLA API abuse → skin LFI → hard-coded password → command injection | Premium room |
+
+---
+
+## Skills & Tools on Display
+
+The write-ups here demonstrate hands-on use of the professional pentest stack:
+
+**Recon & Enumeration** — nmap · ffuf · gobuster · SecLists · dnsrecon
+**Web attacks** — Burp Suite · OWASP ZAP · SQLMap · auth bypasses · LFI · injection
+**Exploitation** — Metasploit · searchsploit · Netcat · PoC adaptation · shell stabilization
+**PrivEsc** — sudo/SUID abuse (GTFOBins) · cron · service misuse · credential reuse
+**Cracking** — Hydra · Hashcat · CyberChef
+**Scripting** — Python · Bash · PowerShell
+
+Full roadmap — certifications, current study focus, and the playbook behind every write-up — on [**My Methodology**](methodology.md).
+
+---
 
 ## Contribute
 
-Write-ups follow one professional structure, so every machine reads the same
-way. Grab [the template](TEMPLATE.md), copy it into the right difficulty
-folder, and add one line to the navigation.
+Write-ups follow one professional structure, so every machine reads the same way. Grab [the template](TEMPLATE.md), copy it into the right difficulty folder, and add one line to the navigation.
 
 - [Contributing guide](contributing.md) — policy, folder layout, and how to publish
-- [Write-up template](TEMPLATE.md) — the 7-section skeleton
+- [Write-up template](TEMPLATE.md) — the 8-section skeleton
 
+---
+
+> [!IMPORTANT]
+> **Ethics:** all targets are intentionally vulnerable lab environments. Nothing in this repository should be used against systems without explicit written authorization.
