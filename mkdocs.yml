@@ -14,6 +14,8 @@ site_dir: site
 
 theme:
   name: material
+  # OPFOR design layer: template overrides (fonts, social meta) live in overrides/
+  custom_dir: overrides
   favicon: favicon.png
   logo: logo.png
   palette:
@@ -33,11 +35,14 @@ theme:
     - content.tabs.link
   icon:
     repo: fontawesome/brands/github
-  # system fonts only (Segoe UI + Cascadia Code), no Google Fonts
+  # system fonts only — OPFOR layer (overrides/main.html) supplies Inter/JetBrains Mono
   font: false
 
 extra_css:
-  - stylesheets/walkthrough.css
+  - stylesheets/opfor.css
+
+extra_javascript:
+  - javascripts/app.js
 
 extra:
   social:
@@ -53,6 +58,7 @@ extra:
 
 hooks:
   - hooks/callouts.py
+  - hooks/ops_index.py
 
 markdown_extensions:
   - admonition

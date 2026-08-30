@@ -1,4 +1,28 @@
+---
+ops:
+  machine: Base
+  platform: HTB
+  difficulty: easy
+  os: linux
+  date: 2026-08-20
+  vector: web
+  classes: [web, privesc]
+  tools: [nmap, ffuf, burp, netcat, gtfobins]
+  summary: "strcmp type-juggling auth bypass -> unrestricted file upload RCE -> password reuse -> sudo find privesc"
+description: "HTB Base (Easy) full write-up: auth bypass, file upload RCE, password reuse and sudo misconfiguration to root"
+hide:
+  - toc
+---
+
 # HTB — Base | Full Walkthrough
+
+<div class="opfor-metabox">
+  <div><span class="meta-label">Platform</span><span class="meta-value">HTB</span></div>
+  <div><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+  <div><span class="meta-label">Difficulty</span><span class="meta-value opfor-tag opfor-tag--easy">easy</span></div>
+  <div><span class="meta-label">Primary Vector</span><span class="meta-value opfor-tag opfor-tag--web">web</span></div>
+  <div><span class="meta-label">Rooted</span><span class="meta-value">Aug 2026</span></div>
+</div>
 
 > [!TIP]
 > **Scope note:** The target IP changes every time the machine spawns. Every command below uses `$IP`, set once at the start of the engagement. All outputs shown were captured against `10.129.50.24`.

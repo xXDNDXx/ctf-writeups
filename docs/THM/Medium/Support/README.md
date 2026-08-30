@@ -1,4 +1,28 @@
+---
+ops:
+  machine: Support
+  platform: THM
+  difficulty: medium
+  os: linux
+  date: 2026-08-22
+  vector: web
+  classes: [web, privesc]
+  tools: [nmap, gobuster, hydra, cyberchef]
+  summary: "hydra brute-force -> forged isITUser role cookie -> BOLA API abuse -> skin LFI -> master password -> command injection"
+description: "THM Support (Medium) full write-up: brute force, cookie forging, BOLA, LFI, command injection"
+hide:
+  - toc
+---
+
 ﻿# THM — Support | Illustrated Writeup
+
+<div class="opfor-metabox">
+  <div><span class="meta-label">Platform</span><span class="meta-value">THM</span></div>
+  <div><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+  <div><span class="meta-label">Difficulty</span><span class="meta-value opfor-tag opfor-tag--medium">medium</span></div>
+  <div><span class="meta-label">Primary Vector</span><span class="meta-value opfor-tag opfor-tag--web">web</span></div>
+  <div><span class="meta-label">Rooted</span><span class="meta-value">Aug 2026</span></div>
+</div>
 
 A new internal **Support Operations Platform** has been deployed to assist IT and helpdesk teams. The application handles user management, internal APIs, and system-level operations. However, security was not the primary focus during development. Several features rely on user-controlled input and weak trust boundaries.
 

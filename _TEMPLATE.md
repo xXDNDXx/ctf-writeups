@@ -1,4 +1,30 @@
+---
+ops:
+  machine: <Machine>
+  platform: HTB            # HTB | THM
+  difficulty: easy         # easy | medium | hard | insane
+  os: linux               # linux | windows
+  date: YYYY-MM-DD
+  vector: web              # web | privesc | ad | recon — primary class
+  classes: [web, privesc]  # all classes demonstrated
+  tools: [nmap, ffuf, burp]
+  summary: "one-line kill chain summary"
+description: "<Machine> — <platform> <difficulty> write-up: <summary>"
+hide:
+  - toc
+---
+
 # HTB — <Machine> | Full Walkthrough
+
+<div class="opfor-mesh" aria-hidden="true"></div>
+
+<div class="opfor-metabox">
+  <div><span class="meta-label">Platform</span><span class="meta-value"><Platform></span></div>
+  <div><span class="meta-label">OS</span><span class="meta-value"><Linux/Windows></span></div>
+  <div><span class="meta-label">Difficulty</span><span class="meta-value opfor-tag opfor-tag--<difficulty>"><difficulty></span></div>
+  <div><span class="meta-label">Primary Vector</span><span class="meta-value opfor-tag opfor-tag--<vector>"><vector></span></div>
+  <div><span class="meta-label">Rooted</span><span class="meta-value">YYYY-MM-DD</span></div>
+</div>
 
 > [!TIP]
 > **Scope note:** The target IP changes every time the machine spawns.
@@ -10,27 +36,14 @@
 
 ---
 
-## 1. Challenge Overview & Metadata
+## 1. Challenge Overview
 
-| Field | Value |
-|---|---|
-| **Machine** | <Machine> |
-| **Platform** | Hack The Box (retired) · TryHackMe (room) |
-| **OS** | Linux / Windows |
-| **Difficulty** | Easy / Medium / Hard / Insane |
-| **Attack Vector** | Web / SMB / API / Active Directory / … |
-| **Key Vulnerabilities** | Bullet list of the chained bugs |
-| **Tools Used** | nmap · ffuf · Burp Suite · Metasploit · … |
-| **My Time** | Xh Ym (to user / to root) |
-| **Date** | YYYY-MM-DD |
+One paragraph: what the machine is, what the intended path felt like, and the shape of the attack chain in one line.
 
-### Attack Chain at a Glance
+**Attack chain at a glance:**
 
-```
-Nmap (…)
-   └─> step one
-         └─> step two
-               └─> root
+```text
+nmap → <crack> → <foothold> → <pivot> → <privesc> → root
 ```
 
 ---
@@ -52,10 +65,8 @@ sudo nmap -sVC -A -Pn -T3 $IP
 | 22/tcp | open | ssh | OpenSSH … |
 | 80/tcp | open | http | Apache … |
 
-```markdown
 ![Caption of the screenshot](assets/01-nmap-scan.png)
 *Caption.*
-```
 
 ### 2.2 <Secondary scan — UDP / full-range / scripts>
 
@@ -118,7 +129,7 @@ export TERM=xterm; stty rows 40 cols 140
 ### 5.1 Post-Exploitation Enumeration
 
 ```bash
-sudo -l                                    # sudo rights — highest-value check
+sudo -l                                    # sudo — always first
 find / -perm -4000 -type f 2>/dev/null     # SUID binaries
 cat /etc/crontab; ls -la /etc/cron*        # scheduled jobs
 ss -tlnp                                   # internal services
@@ -153,7 +164,7 @@ Client-ready fixes mapped to each finding — this is the section a defender rea
 
 ## 7. Lessons Learned
 
-- **Technique internalized:** <the one concrete takeaway about the technique>
+- **Technique internalized:** <the one concrete takeaway>
 - **Do faster next time:** <what you'd do differently>
 - **Adding to cheatsheet:** <tool/command/wordlist worth remembering>
 
@@ -167,14 +178,12 @@ Client-ready fixes mapped to each finding — this is the section a defender rea
 | exploit scripts | `exploits/` |
 | loot / evidence | `loot/` |
 
----
+<div class="opfor-pagefoot">
 
-**Prev/next navigation** (fill in after copying into the machine folder):
-
-```markdown
 | | |
 |---|---|
 | ← Previous | [<Machine>](../<Machine>/README.md) |
-| Back to index | [All write-ups](../../../README.md) · [HTB](../../README.md) · [Easy](../README.md) |
+| Index | [All write-ups](../../../README.md) · [HTB](../../README.md) · [Easy](../README.md) |
 | Next → | *Coming soon* |
-```
+
+</div>

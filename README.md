@@ -55,20 +55,24 @@ What makes these write-ups different from a typical CTF dump:
 
 ```
 ctf-writeups/
-├── branding/                     # banner, logo, social preview (this repo's visual identity)
+├── branding/                     # banner, logo, social preview (visual identity)
 │   ├── banner.png                # README hero banner
 │   ├── og.png                    # social sharing preview (1200×630)
 │   └── logo.png                  # terminal ">_" logo
 ├── docs/                         # MkDocs site source = the write-ups themselves
 │   ├── HTB/                      # Hack The Box machines (retired only)
 │   │   └── <Difficulty>/<Machine>/
-│   │       ├── README.md         # the full write-up
+│   │       ├── README.md         # the full write-up (+ ops frontmatter)
 │   │       └── assets/           # numbered screenshots for that machine
 │   ├── THM/                      # TryHackMe rooms (same structure)
 │   ├── methodology.md            # my engagement playbook
 │   ├── TEMPLATE.md               # write-up skeleton (site copy)
+│   ├── stylesheets/opfor.css     # bespoke design system (tokens → components)
+│   ├── javascripts/app.js        # interactions: HUD counters, filters, ⌘K, terminal chrome
 │   └── contributing.md           # how to publish a write-up here
+├── overrides/main.html           # Material theme layer: Inter/JetBrains Mono + social meta
 ├── hooks/callouts.py             # GitHub-style callouts → Material admonitions
+├── hooks/ops_index.py            # build-time ops index: cards, telemetry, search JSON
 ├── _TEMPLATE.md                  # write-up template (repo copy)
 ├── mkdocs.yml                    # site config + navigation
 └── .github/workflows/deploy.yml  # auto-deploys site on push to main
