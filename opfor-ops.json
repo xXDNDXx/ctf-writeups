@@ -1,0 +1,74 @@
+{
+  "ops": [
+    {
+      "machine": "Support",
+      "platform": "thm",
+      "difficulty": "medium",
+      "os": "linux",
+      "date": "2026-08-22",
+      "vector": "web",
+      "classes": [
+        "web",
+        "privesc"
+      ],
+      "tools": [
+        "nmap",
+        "gobuster",
+        "hydra",
+        "cyberchef"
+      ],
+      "summary": "hydra brute-force -> forged isITUser role cookie -> BOLA API abuse -> skin LFI -> master password -> command injection",
+      "url": "THM/Medium/Support",
+      "root": "Medium/Support"
+    },
+    {
+      "machine": "Base",
+      "platform": "htb",
+      "difficulty": "easy",
+      "os": "linux",
+      "date": "2026-08-20",
+      "vector": "web",
+      "classes": [
+        "web",
+        "privesc"
+      ],
+      "tools": [
+        "nmap",
+        "ffuf",
+        "burp",
+        "netcat",
+        "gtfobins"
+      ],
+      "summary": "strcmp type-juggling auth bypass -> unrestricted file upload RCE -> password reuse -> sudo find privesc",
+      "url": "HTB/Easy/Base",
+      "root": "Easy/Base"
+    }
+  ],
+  "telemetry": {
+    "machines": 2,
+    "platforms": 2,
+    "tools": {
+      "nmap": 2,
+      "gobuster": 1,
+      "hydra": 1,
+      "cyberchef": 1,
+      "ffuf": 1,
+      "burp": 1,
+      "netcat": 1,
+      "gtfobins": 1
+    },
+    "vectors": {
+      "web": 2
+    },
+    "classes": [
+      "privesc",
+      "web"
+    ],
+    "difficulty": {
+      "easy": 1,
+      "medium": 1,
+      "hard": 0,
+      "insane": 0
+    }
+  }
+}

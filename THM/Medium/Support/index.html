@@ -1,0 +1,1927 @@
+
+
+<!doctype html>
+<html lang="en" class="no-js">
+  <head>
+    
+  
+      <meta charset="utf-8">
+      <meta name="viewport" content="width=device-width,initial-scale=1">
+      
+        <meta name="description" content="THM Support (Medium) full write-up: brute force, cookie forging, BOLA, LFI, command injection">
+      
+      
+      
+        <link rel="canonical" href="https://xxdndxx.github.io/ctf-writeups/THM/Medium/Support/">
+      
+      
+        <link rel="prev" href="../">
+      
+      
+        <link rel="next" href="../../Hard/">
+      
+      
+        
+      
+      
+      <link rel="icon" href="../../../favicon.png">
+      <meta name="generator" content="mkdocs-1.6.1, mkdocs-material-9.7.7">
+    
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content=">_ CTF Write-ups">
+  <meta property="og:title" content="Support — >_ CTF Write-ups">
+  
+    <meta property="og:description" content="THM Support (Medium) full write-up: brute force, cookie forging, BOLA, LFI, command injection">
+  
+  <meta property="og:image" content="https://raw.githubusercontent.com/xXDNDXx/ctf-writeups/main/branding/og.png">
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="theme-color" content="#08090d">
+
+    
+      
+        <title>Support - >_ CTF Write-ups</title>
+      
+    
+    
+      <link rel="stylesheet" href="../../../assets/stylesheets/main.ec1eaa64.min.css">
+      
+        
+        <link rel="stylesheet" href="../../../assets/stylesheets/palette.ab4e12ef.min.css">
+      
+      
+
+
+    
+    
+      
+    
+    
+  <link rel="preconnect" href="https://fonts.bunny.net" crossorigin>
+  <link rel="stylesheet" href="https://fonts.bunny.net/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
+  <style>
+    :root {
+      --md-text-font: 'Inter', ui-sans-serif, system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+      --md-code-font: 'JetBrains Mono', ui-monospace, 'Cascadia Code', Consolas, 'Courier New', monospace;
+    }
+  </style>
+
+    
+      <link rel="stylesheet" href="../../../stylesheets/opfor.css">
+    
+    <script>__md_scope=new URL("../../..",location),__md_hash=e=>[...e].reduce(((e,_)=>(e<<5)-e+_.charCodeAt(0)),0),__md_get=(e,_=localStorage,t=__md_scope)=>JSON.parse(_.getItem(t.pathname+"."+e)),__md_set=(e,_,t=localStorage,a=__md_scope)=>{try{t.setItem(a.pathname+"."+e,JSON.stringify(_))}catch(e){}}</script>
+    
+      
+
+    
+    
+  </head>
+  
+  
+    
+    
+    
+    
+    
+    <body dir="ltr" data-md-color-scheme="slate" data-md-color-primary="indigo" data-md-color-accent="indigo">
+  
+    
+    <input class="md-toggle" data-md-toggle="drawer" type="checkbox" id="__drawer" autocomplete="off">
+    <input class="md-toggle" data-md-toggle="search" type="checkbox" id="__search" autocomplete="off">
+    <label class="md-overlay" for="__drawer"></label>
+    <div data-md-component="skip">
+      
+        
+        <a href="#directory" class="md-skip">
+          Skip to content
+        </a>
+      
+    </div>
+    <div data-md-component="announce">
+      
+    </div>
+    
+    
+      
+
+<header class="md-header" data-md-component="header">
+  <nav class="md-header__inner md-grid" aria-label="Header">
+    <a href="../../.." title="&gt;_ CTF Write-ups" class="md-header__button md-logo" aria-label=">_ CTF Write-ups" data-md-component="logo">
+      
+  <img src="../../../logo.png" alt="logo">
+
+    </a>
+    <label class="md-header__button md-icon" for="__drawer">
+      
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M3 6h18v2H3zm0 5h18v2H3zm0 5h18v2H3z"/></svg>
+    </label>
+    <div class="md-header__title" data-md-component="header-title">
+      <div class="md-header__ellipsis">
+        <div class="md-header__topic">
+          <span class="md-ellipsis">
+            >_ CTF Write-ups
+          </span>
+        </div>
+        <div class="md-header__topic" data-md-component="header-topic">
+          <span class="md-ellipsis">
+            
+              Support
+            
+          </span>
+        </div>
+      </div>
+    </div>
+    
+      
+    
+    
+    
+    
+      
+      
+        <label class="md-header__button md-icon" for="__search">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        </label>
+        <div class="md-search" data-md-component="search" role="dialog">
+  <label class="md-search__overlay" for="__search"></label>
+  <div class="md-search__inner" role="search">
+    <form class="md-search__form" name="search">
+      <input type="text" class="md-search__input" name="query" aria-label="Search" placeholder="Search" autocapitalize="off" autocorrect="off" autocomplete="off" spellcheck="false" data-md-component="search-query" required>
+      <label class="md-search__icon md-icon" for="__search">
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M9.5 3A6.5 6.5 0 0 1 16 9.5c0 1.61-.59 3.09-1.56 4.23l.27.27h.79l5 5-1.5 1.5-5-5v-.79l-.27-.27A6.52 6.52 0 0 1 9.5 16 6.5 6.5 0 0 1 3 9.5 6.5 6.5 0 0 1 9.5 3m0 2C7 5 5 7 5 9.5S7 14 9.5 14 14 12 14 9.5 12 5 9.5 5"/></svg>
+        
+        <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+      </label>
+      <nav class="md-search__options" aria-label="Search">
+        
+          <a href="javascript:void(0)" class="md-search__icon md-icon" title="Share" aria-label="Share" data-clipboard data-clipboard-text="" data-md-component="search-share" tabindex="-1">
+            
+            <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 0 0 3-3 3 3 0 0 0-3-3 3 3 0 0 0-3 3c0 .24.04.47.09.7L8.04 9.81C7.5 9.31 6.79 9 6 9a3 3 0 0 0-3 3 3 3 0 0 0 3 3c.79 0 1.5-.31 2.04-.81l7.12 4.15c-.05.21-.08.43-.08.66 0 1.61 1.31 2.91 2.92 2.91s2.92-1.3 2.92-2.91A2.92 2.92 0 0 0 18 16.08"/></svg>
+          </a>
+        
+        <button type="reset" class="md-search__icon md-icon" title="Clear" aria-label="Clear" tabindex="-1">
+          
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M19 6.41 17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z"/></svg>
+        </button>
+      </nav>
+      
+        <div class="md-search__suggest" data-md-component="search-suggest"></div>
+      
+    </form>
+    <div class="md-search__output">
+      <div class="md-search__scrollwrap" tabindex="0" data-md-scrollfix>
+        <div class="md-search-result" data-md-component="search-result">
+          <div class="md-search-result__meta">
+            Initializing search
+          </div>
+          <ol class="md-search-result__list" role="presentation"></ol>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+      
+    
+    
+      <div class="md-header__source">
+        <a href="https://github.com/xXDNDXx/ctf-writeups" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xXDNDXx/ctf-writeups
+  </div>
+</a>
+      </div>
+    
+  </nav>
+  
+</header>
+    
+    <div class="md-container" data-md-component="container">
+      
+      
+        
+          
+            
+<nav class="md-tabs" aria-label="Tabs" data-md-component="tabs">
+  <div class="md-grid">
+    <ul class="md-tabs__list">
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../.." class="md-tabs__link">
+        
+  
+  
+    
+  
+  Home
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    <li class="md-tabs__item">
+      <a href="../../../methodology/" class="md-tabs__link">
+        
+  
+  
+    
+  
+  Methodology
+
+      </a>
+    </li>
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../HTB/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  HTB
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+    
+  
+  
+    
+    
+      <li class="md-tabs__item md-tabs__item--active">
+        <a href="../../" class="md-tabs__link">
+          
+  
+  
+    
+  
+  THM
+
+        </a>
+      </li>
+    
+  
+
+      
+        
+  
+  
+  
+  
+    
+    
+      <li class="md-tabs__item">
+        <a href="../../../contributing/" class="md-tabs__link">
+          
+  
+  
+    
+  
+  Contribute
+
+        </a>
+      </li>
+    
+  
+
+      
+    </ul>
+  </div>
+</nav>
+          
+        
+      
+      <main class="md-main" data-md-component="main">
+        <div class="md-main__inner md-grid">
+          
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--primary" data-md-component="sidebar" data-md-type="navigation" >
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+
+  
+
+
+<nav class="md-nav md-nav--primary md-nav--lifted" aria-label="Navigation" data-md-level="0">
+  <label class="md-nav__title" for="__drawer">
+    <a href="../../.." title="&gt;_ CTF Write-ups" class="md-nav__button md-logo" aria-label=">_ CTF Write-ups" data-md-component="logo">
+      
+  <img src="../../../logo.png" alt="logo">
+
+    </a>
+    >_ CTF Write-ups
+  </label>
+  
+    <div class="md-nav__source">
+      <a href="https://github.com/xXDNDXx/ctf-writeups" title="Go to repository" class="md-source" data-md-component="source">
+  <div class="md-source__icon md-icon">
+    
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+  </div>
+  <div class="md-source__repository">
+    xXDNDXx/ctf-writeups
+  </div>
+</a>
+    </div>
+  
+  <ul class="md-nav__list" data-md-scrollfix>
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../.." class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Home
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../methodology/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Methodology
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../HTB/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    HTB
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3" id="__nav_3_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_3_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    HTB
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_3_2" >
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../../HTB/Easy/" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Easy
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_3_2" id="__nav_3_2_label" tabindex="0">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_3_2_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_3_2">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Easy
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../HTB/Easy/Base/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Base
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../HTB/Medium/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Medium
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../HTB/Hard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../HTB/Insane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+        
+      
+        
+      
+        
+      
+    
+    
+    
+      
+        
+        
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    THM
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4" id="__nav_4_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_4_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    THM
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Easy/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Easy
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    
+    
+      
+        
+          
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+          
+          
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--active md-nav__item--section md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_4_3" checked>
+        
+          
+          <div class="md-nav__link md-nav__container">
+            <a href="../" class="md-nav__link ">
+              
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Medium
+  
+
+    
+  </span>
+  
+  
+
+            </a>
+            
+              
+              <label class="md-nav__link " for="__nav_4_3" id="__nav_4_3_label" tabindex="">
+                <span class="md-nav__icon md-icon"></span>
+              </label>
+            
+          </div>
+        
+        <nav class="md-nav" data-md-level="2" aria-labelledby="__nav_4_3_label" aria-expanded="true">
+          <label class="md-nav__title" for="__nav_4_3">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Medium
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+            
+              
+                
+  
+  
+    
+  
+  
+  
+    <li class="md-nav__item md-nav__item--active">
+      
+      <input class="md-nav__toggle md-toggle" type="checkbox" id="__toc">
+      
+      
+      
+        <label class="md-nav__link md-nav__link--active" for="__toc">
+          
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support
+  
+
+    
+  </span>
+  
+  
+
+          <span class="md-nav__icon md-icon"></span>
+        </label>
+      
+      <a href="./" class="md-nav__link md-nav__link--active">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Support
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+      
+        
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01-recon-nmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        01 Recon — nmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#02-content-discovery-gobuster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        02 Content discovery — gobuster
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#03-brute-forcing-the-login-hydra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        03 Brute forcing the login — hydra
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#04-first-look-theme-settings-and-a-suspicious-cookie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        04 First look — theme settings and a suspicious cookie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#05-cracking-the-isituser-cookie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        05 Cracking the isITUser cookie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#06-it-admin-panel-and-the-internal-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        06 IT Admin Panel and the internal API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#07-skin-lfi-source-disclosure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        07 Skin LFI — source disclosure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#08-admin-username-admin-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        08 Admin username → admin flag
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#09-command-injection-via-the-date-widget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        09 Command injection via the date widget
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-reflection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10 Reflection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary — the chain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary — the chain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remediation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remediation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+      
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Hard/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Hard
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../Insane/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Insane
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+      
+      
+  
+  
+  
+  
+    
+    
+      
+        
+      
+        
+      
+    
+    
+    
+      
+      
+        
+      
+    
+    
+    <li class="md-nav__item md-nav__item--nested">
+      
+        
+        
+        <input class="md-nav__toggle md-toggle " type="checkbox" id="__nav_5" >
+        
+          
+          <label class="md-nav__link" for="__nav_5" id="__nav_5_label" tabindex="0">
+            
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contribute
+  
+
+    
+  </span>
+  
+  
+
+            <span class="md-nav__icon md-icon"></span>
+          </label>
+        
+        <nav class="md-nav" data-md-level="1" aria-labelledby="__nav_5_label" aria-expanded="false">
+          <label class="md-nav__title" for="__nav_5">
+            <span class="md-nav__icon md-icon"></span>
+            
+  
+    Contribute
+  
+
+          </label>
+          <ul class="md-nav__list" data-md-scrollfix>
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../contributing/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Contributing
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+              
+                
+  
+  
+  
+  
+    <li class="md-nav__item">
+      <a href="../../../TEMPLATE/" class="md-nav__link">
+        
+  
+  
+  <span class="md-ellipsis">
+    
+  
+    Write-up template
+  
+
+    
+  </span>
+  
+  
+
+      </a>
+    </li>
+  
+
+              
+            
+          </ul>
+        </nav>
+      
+    </li>
+  
+
+    
+  </ul>
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+            
+              
+                
+              
+              <div class="md-sidebar md-sidebar--secondary" data-md-component="sidebar" data-md-type="toc" hidden>
+                <div class="md-sidebar__scrollwrap">
+                  <div class="md-sidebar__inner">
+                    
+
+<nav class="md-nav md-nav--secondary" aria-label="Table of contents">
+  
+  
+  
+  
+    <label class="md-nav__title" for="__toc">
+      <span class="md-nav__icon md-icon"></span>
+      Table of contents
+    </label>
+    <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
+      
+        <li class="md-nav__item">
+  <a href="#directory" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Directory
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#01-recon-nmap" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        01 Recon — nmap
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#02-content-discovery-gobuster" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        02 Content discovery — gobuster
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#03-brute-forcing-the-login-hydra" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        03 Brute forcing the login — hydra
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#04-first-look-theme-settings-and-a-suspicious-cookie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        04 First look — theme settings and a suspicious cookie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#05-cracking-the-isituser-cookie" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        05 Cracking the isITUser cookie
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#06-it-admin-panel-and-the-internal-api" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        06 IT Admin Panel and the internal API
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#07-skin-lfi-source-disclosure" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        07 Skin LFI — source disclosure
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#08-admin-username-admin-flag" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        08 Admin username → admin flag
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#09-command-injection-via-the-date-widget" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        09 Command injection via the date widget
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#10-reflection" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        10 Reflection
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
+  <a href="#summary-the-chain" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Summary — the chain
+      
+    </span>
+  </a>
+  
+    <nav class="md-nav" aria-label="Summary — the chain">
+      <ul class="md-nav__list">
+        
+          <li class="md-nav__item">
+  <a href="#remediation" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        Remediation
+      
+    </span>
+  </a>
+  
+</li>
+        
+      </ul>
+    </nav>
+  
+</li>
+      
+    </ul>
+  
+</nav>
+                  </div>
+                </div>
+              </div>
+            
+          
+          
+            <div class="md-content" data-md-component="content">
+              
+              <article class="md-content__inner md-typeset">
+                
+                  
+  
+
+
+
+  
+  
+
+
+  <h1>Support</h1>
+
+<p>﻿# THM — Support | Illustrated Writeup</p>
+<div class="opfor-metabox">
+  <div><span class="meta-label">Platform</span><span class="meta-value">THM</span></div>
+  <div><span class="meta-label">OS</span><span class="meta-value">Linux</span></div>
+  <div><span class="meta-label">Difficulty</span><span class="meta-value opfor-tag opfor-tag--medium">medium</span></div>
+  <div><span class="meta-label">Primary Vector</span><span class="meta-value opfor-tag opfor-tag--web">web</span></div>
+  <div><span class="meta-label">Rooted</span><span class="meta-value">Aug 2026</span></div>
+</div>
+
+<p>A new internal <strong>Support Operations Platform</strong> has been deployed to assist IT and helpdesk teams. The application handles user management, internal APIs, and system-level operations. However, security was not the primary focus during development. Several features rely on user-controlled input and weak trust boundaries.</p>
+<p>From that brief I expected API-flavoured bugs — <strong>BOLA</strong>, mass assignment, data exposure — so I went in looking for weak inputs and overly trusting clients. This writeup follows the full path: a recon pass and content discovery, a brute-forced helpdesk password, a forged role cookie, a path-traversal source leak, and finally a command injection.</p>
+<p><img alt="Figure 1 — the Support room on TryHackMe" src="assets/01-room-brief.jpg" />
+<em>Figure 1 — The Support room brief, from the TryHackMe room.</em></p>
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><strong>Target</strong></td>
+<td>10.48.186.187</td>
+</tr>
+<tr>
+<td><strong>Services</strong></td>
+<td>SSH (OpenSSH 9.6p1) + HTTP (Apache 2.4.58)</td>
+</tr>
+<tr>
+<td><strong>Tools</strong></td>
+<td>nmap · gobuster · hydra · browser DevTools</td>
+</tr>
+</tbody>
+</table>
+<p><strong>My path:</strong> nmap → gobuster → hydra → theme/cookie recon → crack the <code>isITUser</code> MD5 → IT Admin Panel + <code>/api</code> → skin LFI → master password → admin login → command injection. <strong>Admin flag:</strong> <code>THM{I_AM_ADMIN999}</code> · <strong>User flag:</strong> <code>THM{GOT_THE_FLAG001}</code></p>
+<table>
+<thead>
+<tr>
+<th>Item</th>
+<th>Value</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Initial account</td>
+<td><code>help@support.thm</code></td>
+</tr>
+<tr>
+<td>Cracked password</td>
+<td><code>snoopy</code> (hydra, http-post-form)</td>
+</tr>
+<tr>
+<td>Cookie after login</td>
+<td><code>isITUser = md5("false") = 68934a3e9455fa72420237eb05902327</code></td>
+</tr>
+<tr>
+<td>Forged cookie</td>
+<td><code>isITUser = md5("true") = b326b5062b2f0e69046810717534cb09</code></td>
+</tr>
+<tr>
+<td>Admin account (via /users/1)</td>
+<td><code>specialadmin@support.thm</code></td>
+</tr>
+<tr>
+<td>Master password</td>
+<td><code>support@110</code> → login with the <code>@</code> removed → <code>support110</code></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="directory">Directory<a class="headerlink" href="#directory" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Section</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>01</td>
+<td><a href="#01-recon-nmap">Recon — nmap</a></td>
+</tr>
+<tr>
+<td>02</td>
+<td><a href="#02-content-discovery-gobuster">Content discovery — gobuster</a></td>
+</tr>
+<tr>
+<td>03</td>
+<td><a href="#03-brute-forcing-the-login-hydra">Brute forcing the login — hydra</a></td>
+</tr>
+<tr>
+<td>04</td>
+<td><a href="#04-first-look-theme-settings-and-a-suspicious-cookie">First look — theme settings and a suspicious cookie</a></td>
+</tr>
+<tr>
+<td>05</td>
+<td><a href="#05-cracking-the-isituser-cookie">Cracking the isITUser cookie</a></td>
+</tr>
+<tr>
+<td>06</td>
+<td><a href="#06-it-admin-panel-and-the-internal-api">IT Admin Panel and the internal API</a></td>
+</tr>
+<tr>
+<td>07</td>
+<td><a href="#07-skin-lfi-source-disclosure">Skin LFI — source disclosure</a></td>
+</tr>
+<tr>
+<td>08</td>
+<td><a href="#08-admin-username-admin-flag">Admin username → admin flag</a></td>
+</tr>
+<tr>
+<td>09</td>
+<td><a href="#09-command-injection-via-the-date-widget">Command injection via the date widget</a></td>
+</tr>
+<tr>
+<td>10</td>
+<td><a href="#10-reflection">Reflection</a></td>
+</tr>
+<tr>
+<td>—</td>
+<td><a href="#summary-the-chain">Summary — the chain</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="01-recon-nmap">01 Recon — nmap<a class="headerlink" href="#01-recon-nmap" title="Permanent link">&para;</a></h2>
+<p>A quick <code>nmap -sVC</code> scan showed only two services: <strong>SSH</strong> and <strong>HTTP</strong>. Port 80 hosted the Support Operations Panel, so that was the target — and the scan output already hinted that cookies matter here: <code>PHPSESSID</code> ships without the <code>httponly</code> flag.</p>
+<p><img alt="Figure 2 — nmap scan of the target" src="assets/02-nmap-scan.jpg" />
+<em>Figure 2 — <code>nmap -sVC</code>: OpenSSH 9.6p1 on 22, Apache 2.4.58 on 80, title "Support Operations Panel".</em></p>
+<hr />
+<h2 id="02-content-discovery-gobuster">02 Content discovery — gobuster<a class="headerlink" href="#02-content-discovery-gobuster" title="Permanent link">&para;</a></h2>
+<p>I spent the next 30 minutes discovering content and looking for vulnerabilities. <strong>gobuster</strong> in directory enumeration mode over a SecLists wordlist mapped the application out:</p>
+<p><img alt="Figure 3 — gobuster directory enumeration" src="assets/03-gobuster-dirs.jpg" />
+<em>Figure 3 — gobuster surfaces <code>/includes/</code>, <code>/js/</code>, <code>/layout/</code> and — most interesting — <code>/skins/</code>, alongside <code>index.php</code> and <code>info.php</code>.</em></p>
+<p><code>/skins/</code> was a directory listing: <code>blue.php</code>, <code>default.php</code>, <code>green.php</code>, <code>red.php</code> — one file per theme. Parked for later.</p>
+<hr />
+<h2 id="03-brute-forcing-the-login-hydra">03 Brute forcing the login — hydra<a class="headerlink" href="#03-brute-forcing-the-login-hydra" title="Permanent link">&para;</a></h2>
+<p>The root page redirects to an <strong>Employee Authentication</strong> page that helpfully references the helpdesk account — so the username was known and only the password was missing.</p>
+<p><img alt="Figure 4 — the Employee Authentication login page" src="assets/04-login-page.jpg" />
+<em>Figure 4 — The login page names the helpdesk account <code>help@support.thm</code>.</em></p>
+<p>While discovery ran, I pointed <strong>hydra</strong>'s <code>http-post-form</code> module at the login with <code>rockyou.txt</code>:</p>
+<p><img alt="Figure 5 — hydra cracks the helpdesk password" src="assets/05-hydra-crack.jpg" />
+<em>Figure 5 — hydra finds a valid password: <code>help@support.thm : snoopy</code>.</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-0-1" name="__codelineno-0-1" href="#__codelineno-0-1"></a>Cracked: help@support.thm : snoopy
+</code></pre></div>
+<hr />
+<h2 id="04-first-look-theme-settings-and-a-suspicious-cookie">04 First look — theme settings and a suspicious cookie<a class="headerlink" href="#04-first-look-theme-settings-and-a-suspicious-cookie" title="Permanent link">&para;</a></h2>
+<p>Logging in lands on a plain low-privilege helpdesk dashboard. Two things stood out:</p>
+<ul>
+<li>The footer has a <strong>Select Theme</strong> menu — and enumeration had already shown <code>/skins/</code> on the server, so the theme picker loads a PHP file from that folder. Holding onto that as possible <strong>LFI</strong> for later.</li>
+<li>Checking my cookies, a new <strong><code>isITUser</code></strong> cookie had appeared. From earlier rooms I guessed it was an MD5 hash — and I was correct.</li>
+</ul>
+<p><img alt="Figure 6 — the isITUser cookie in DevTools" src="assets/06-isituser-cookie.jpg" />
+<em>Figure 6 — DevTools shows the new <code>isITUser</code> cookie next to <code>PHPSESSID</code>.</em></p>
+<hr />
+<h2 id="05-cracking-the-isituser-cookie">05 Cracking the isITUser cookie<a class="headerlink" href="#05-cracking-the-isituser-cookie" title="Permanent link">&para;</a></h2>
+<p>The value <code>68934a3e9455fa72420237eb05902327</code> looks exactly like an unsalted MD5. An online cracker confirms the hunch — it's the MD5 of <strong><code>false</code></strong>:</p>
+<p><img alt="Figure 7 — an online cracker confirms md5(&quot;false&quot;)" src="assets/07-cracker-md5-false.jpg" />
+<em>Figure 7 — The cracker confirms <code>isITUser = md5("false") = 68934a3e9455fa72420237eb05902327</code>.</em></p>
+<p>So the role check comes down to a client-controlled boolean. Computing the MD5 of <strong><code>true</code></strong> in CyberChef:</p>
+<p><img alt="Figure 8 — CyberChef computes md5(&quot;true&quot;)" src="assets/08-cyberchef-md5-true.jpg" />
+<em>Figure 8 — <code>md5("true") = b326b5062b2f0e69046810717534cb09</code>.</em></p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-1-1" name="__codelineno-1-1" href="#__codelineno-1-1"></a>Cookie: isITUser=b326b5062b2f0e69046810717534cb09
+</code></pre></div>
+<p>The dashboard itself is nothing special — a "Welcome, Helpdesk User" greeting and a ticket management box:</p>
+<p><img alt="Figure 9 — the plain helpdesk dashboard" src="assets/09-helpdesk-dashboard.jpg" />
+<em>Figure 9 — The plain "Welcome, Helpdesk User" dashboard before the swap.</em></p>
+<hr />
+<h2 id="06-it-admin-panel-and-the-internal-api">06 IT Admin Panel and the internal API<a class="headerlink" href="#06-it-admin-panel-and-the-internal-api" title="Permanent link">&para;</a></h2>
+<p>Swapping the cookie for <code>b326b5…</code> and reloading: the homepage immediately grew an <strong>IT Admin Panel</strong> with a <strong>View API</strong> button, and a new endpoint — <strong><code>/api</code></strong> — appeared.</p>
+<p><img alt="Figure 10 — the IT Admin Panel appears" src="assets/10-it-admin-panel.jpg" />
+<em>Figure 10 — With the forged cookie, the dashboard grows an IT Admin Panel.</em></p>
+<p>The internal user API invites a helpdesk user to query their own profile at <code>/user/3</code>:</p>
+<p><img alt="Figure 11 — the internal user API" src="assets/11-api-user3.jpg" />
+<em>Figure 11 — <code>/user/3</code> returns the email, 2FA status and admin flag for the helpdesk account.</em></p>
+<p>I played around requesting users 1 and 2 — nothing interesting came back — but an ID in the request that isn't tied to the session points to <strong>BOLA</strong>. Keep that in mind for later.</p>
+<hr />
+<h2 id="07-skin-lfi-source-disclosure">07 Skin LFI — source disclosure<a class="headerlink" href="#07-skin-lfi-source-disclosure" title="Permanent link">&para;</a></h2>
+<p>Stuck for a while, I went back to the theme selector: it alters the page's dynamic content parameters, which I tested for <strong>LFI</strong>. Appending <code>../config</code> to the skin parameter makes the dashboard load <code>config.php</code> from outside the skins folder — and its source comes straight back, including a hard-coded master password:</p>
+<p><img alt="Figure 12 — the skin parameter discloses config.php" src="assets/12-lfi-config-source.jpg" />
+<em>Figure 12 — <code>dashboard.php?skin=../config</code> renders the portal's PHP source — <code>$MASTER_PASSWORD = 'support@110'</code>.</em></p>
+<p><strong>Key trick:</strong> don't type <code>.php</code> in the payload — the app appends it, so <code>../config.php</code> would become <code>config.php.php</code> and fail. Use <code>../config</code>.</p>
+<hr />
+<h2 id="08-admin-username-admin-flag">08 Admin username → admin flag<a class="headerlink" href="#08-admin-username-admin-flag" title="Permanent link">&para;</a></h2>
+<p>I had the master password but struggled to find the correct username — until I queried the <strong><code>/users/1</code></strong> endpoint (the users collection, not the <code>/api.php?id=#</code> profile form). That returns the email, 2FA status and <code>admin: true</code> — giving me <code>specialadmin@support.thm</code>.</p>
+<p>Logging in with the master password kept failing… until I caught the trick: the <code>@</code> has to be removed.</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-2-1" name="__codelineno-2-1" href="#__codelineno-2-1"></a>email: specialadmin@support.thm   password: support110   # support@110 with the @ removed
+</code></pre></div>
+<p>That put me in the admin's shoes, and the first flag was on the homepage.</p>
+<p><img alt="Figure 13 — Administrator Access Confirmed" src="assets/13-admin-flag.jpg" />
+<em>Figure 13 — Administrator Access Confirmed — <code>THM{I_AM_ADMIN999}</code>.</em></p>
+<details class="success">
+<summary>Flag 1 — click to reveal</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-3-1" name="__codelineno-3-1" href="#__codelineno-3-1"></a>THM{I_AM_ADMIN999}
+</code></pre></div>
+</details>
+<hr />
+<h2 id="09-command-injection-via-the-date-widget">09 Command injection via the date widget<a class="headerlink" href="#09-command-injection-via-the-date-widget" title="Permanent link">&para;</a></h2>
+<p>Something interesting also came with admin rights: a new <strong>date widget</strong> in the footer. Changing the date fires a <code>POST /dashboard.php</code> carrying a <strong><code>sys</code></strong> parameter (<code>sys=date</code>) alongside the forged cookie:</p>
+<p><img alt="Figure 14 — the POST carrying the sys parameter" src="assets/14-sys-param-post.jpg" />
+<em>Figure 14 — The request body carries <code>sys=date</code>; the server executes it.</em></p>
+<p>The <code>sys</code> argument is executed on the server. <code>cat /home/ubuntu/user.txt</code> on its own was blocked, and URL-encoding or Base64-encoding the command didn't get past the filter either. Falling back to path resources, a simple <strong><code>;</code></strong> separator did:</p>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-4-1" name="__codelineno-4-1" href="#__codelineno-4-1"></a>sys=date; cat /home/ubuntu/user.txt
+</code></pre></div>
+<p><img alt="Figure 15 — the injected command reveals the user flag" src="assets/15-injection-user-flag.jpg" />
+<em>Figure 15 — The output renders straight back into the page — the user flag.</em></p>
+<details class="success">
+<summary>Flag 2 — click to reveal</summary>
+<div class="highlight"><pre><span></span><code><a id="__codelineno-5-1" name="__codelineno-5-1" href="#__codelineno-5-1"></a>THM{GOT_THE_FLAG001}
+</code></pre></div>
+</details>
+<hr />
+<h2 id="10-reflection">10 Reflection<a class="headerlink" href="#10-reflection" title="Permanent link">&para;</a></h2>
+<ul>
+<li>This room pushed me a lot and made me realise I need refreshers on a few topics.</li>
+<li>I really enjoyed it — but not the master-password/username section: having to drop the <code>@</code> from <code>support@110</code> felt pretty arbitrary. I got stuck there and had to read a Reddit post to get past it.</li>
+</ul>
+<hr />
+<h2 id="summary-the-chain">Summary — the chain<a class="headerlink" href="#summary-the-chain" title="Permanent link">&para;</a></h2>
+<table>
+<thead>
+<tr>
+<th>#</th>
+<th>Weakness</th>
+<th>Severity</th>
+<th>What it gave me</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>1</td>
+<td>Weak password / no login protection (hydra)</td>
+<td>Medium</td>
+<td>Helpdesk foothold (<code>snoopy</code>)</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Client-side role trust (<code>isITUser</code> = unsalted MD5)</td>
+<td>Critical</td>
+<td>Forged IT role</td>
+</tr>
+<tr>
+<td>3</td>
+<td>BOLA-prone internal user API (<code>/users/1</code>)</td>
+<td>High</td>
+<td>Admin email</td>
+</tr>
+<tr>
+<td>4</td>
+<td>Skin loader path traversal (LFI)</td>
+<td>Critical</td>
+<td>Source + master password</td>
+</tr>
+<tr>
+<td>5</td>
+<td>Hard-coded master password in source</td>
+<td>Critical</td>
+<td>Admin login</td>
+</tr>
+<tr>
+<td>6</td>
+<td>Command injection in the date widget (<code>sys</code>)</td>
+<td>Critical</td>
+<td>Read <code>/home/ubuntu/user.txt</code></td>
+</tr>
+</tbody>
+</table>
+<h3 id="remediation">Remediation<a class="headerlink" href="#remediation" title="Permanent link">&para;</a></h3>
+<p>Strong passwords with lockout/rate-limiting; store roles server-side and never trust a client cookie for authorization; enforce object-level access so users read only their own profile; allow-list skin names and resolve them against the skins directory; remove and rotate hard-coded secrets and require MFA for admins; and never pass user input to a shell.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Flags: admin <code>THM{I_AM_ADMIN999}</code> · user <code>THM{GOT_THE_FLAG001}</code> — educational writeup for the TryHackMe <a href="https://tryhackme.com/room/support">Support</a> room. For authorized lab use only.</p>
+</div>
+<hr />
+<table>
+<thead>
+<tr>
+<th></th>
+<th></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>← Previous</td>
+<td><a href="../../../HTB/Easy/Base/">HTB — Base</a></td>
+</tr>
+<tr>
+<td>Back to index</td>
+<td><a href="../../../">All write-ups</a> · <a href="../../">THM</a> · <a href="../">THM — Medium</a></td>
+</tr>
+<tr>
+<td>Next →</td>
+<td><em>Coming soon</em></td>
+</tr>
+</tbody>
+</table>
+
+
+
+
+
+
+
+  
+  
+
+
+
+
+  
+
+
+
+                
+              </article>
+            </div>
+          
+          
+  <script>var tabs=__md_get("__tabs");if(Array.isArray(tabs))e:for(var set of document.querySelectorAll(".tabbed-set")){var labels=set.querySelector(".tabbed-labels");for(var tab of tabs)for(var label of labels.getElementsByTagName("label"))if(label.innerText.trim()===tab){var input=document.getElementById(label.htmlFor);input.checked=!0;continue e}}</script>
+
+<script>var target=document.getElementById(location.hash.slice(1));target&&target.name&&(target.checked=target.name.startsWith("__tabbed_"))</script>
+        </div>
+        
+          <button type="button" class="md-top md-icon" data-md-component="top" hidden>
+  
+  <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8z"/></svg>
+  Back to top
+</button>
+        
+      </main>
+      
+        <footer class="md-footer">
+  
+    
+      
+        
+      
+      <nav class="md-footer__inner md-grid" aria-label="Footer" >
+        
+          
+          <a href="../" class="md-footer__link md-footer__link--prev" aria-label="Previous: THM — Medium">
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M20 11v2H8l5.5 5.5-1.42 1.42L4.16 12l7.92-7.92L13.5 5.5 8 11z"/></svg>
+            </div>
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Previous
+              </span>
+              <div class="md-ellipsis">
+                THM — Medium
+              </div>
+            </div>
+          </a>
+        
+        
+          
+          <a href="../../Hard/" class="md-footer__link md-footer__link--next" aria-label="Next: Hard">
+            <div class="md-footer__title">
+              <span class="md-footer__direction">
+                Next
+              </span>
+              <div class="md-ellipsis">
+                Hard
+              </div>
+            </div>
+            <div class="md-footer__button md-icon">
+              
+              <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24"><path d="M4 11v2h12l-5.5 5.5 1.42 1.42L19.84 12l-7.92-7.92L10.5 5.5 16 11z"/></svg>
+            </div>
+          </a>
+        
+      </nav>
+    
+  
+  <div class="md-footer-meta md-typeset">
+    <div class="md-footer-meta__inner md-grid">
+      <div class="md-copyright">
+  
+    <div class="md-copyright__highlight">
+      Daniel Dayan — educational use only. All write-ups cover retired Hack The Box machines and TryHackMe rooms. Nothing here may be used against systems without explicit written authorization.
+    </div>
+  
+  
+    Made with
+    <a href="https://squidfunk.github.io/mkdocs-material/" target="_blank" rel="noopener">
+      Material for MkDocs
+    </a>
+  
+</div>
+      
+        
+<div class="md-social">
+  
+    
+    
+    
+    
+    <a href="https://github.com/xXDNDXx" target="_blank" rel="noopener" title="GitHub" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M173.9 397.4c0 2-2.3 3.6-5.2 3.6-3.3.3-5.6-1.3-5.6-3.6 0-2 2.3-3.6 5.2-3.6 3-.3 5.6 1.3 5.6 3.6m-31.1-4.5c-.7 2 1.3 4.3 4.3 4.9 2.6 1 5.6 0 6.2-2s-1.3-4.3-4.3-5.2c-2.6-.7-5.5.3-6.2 2.3m44.2-1.7c-2.9.7-4.9 2.6-4.6 4.9.3 2 2.9 3.3 5.9 2.6 2.9-.7 4.9-2.6 4.6-4.6-.3-1.9-3-3.2-5.9-2.9M252.8 8C114.1 8 8 113.3 8 252c0 110.9 69.8 205.8 169.5 239.2 12.8 2.3 17.3-5.6 17.3-12.1 0-6.2-.3-40.4-.3-61.4 0 0-70 15-84.7-29.8 0 0-11.4-29.1-27.8-36.6 0 0-22.9-15.7 1.6-15.4 0 0 24.9 2 38.6 25.8 21.9 38.6 58.6 27.5 72.9 20.9 2.3-16 8.8-27.1 16-33.7-55.9-6.2-112.3-14.3-112.3-110.5 0-27.5 7.6-41.3 23.6-58.9-2.6-6.5-11.1-33.3 2.6-67.9 20.9-6.5 69 27 69 27 20-5.6 41.5-8.5 62.8-8.5s42.8 2.9 62.8 8.5c0 0 48.1-33.6 69-27 13.7 34.7 5.2 61.4 2.6 67.9 16 17.7 25.8 31.5 25.8 58.9 0 96.5-58.9 104.2-114.8 110.5 9.2 7.9 17 22.9 17 46.4 0 33.7-.3 75.4-.3 83.6 0 6.5 4.6 14.4 17.3 12.1C436.2 457.8 504 362.9 504 252 504 113.3 391.5 8 252.8 8M105.2 352.9c-1.3 1-1 3.3.7 5.2 1.6 1.6 3.9 2.3 5.2 1 1.3-1 1-3.3-.7-5.2-1.6-1.6-3.9-2.3-5.2-1m-10.8-8.1c-.7 1.3.3 2.9 2.3 3.9 1.6 1 3.6.7 4.3-.7.7-1.3-.3-2.9-2.3-3.9-2-.6-3.6-.3-4.3.7m32.4 35.6c-1.6 1.3-1 4.3 1.3 6.2 2.3 2.3 5.2 2.6 6.5 1 1.3-1.3.7-4.3-1.3-6.2-2.2-2.3-5.2-2.6-6.5-1m-11.4-14.7c-1.6 1-1.6 3.6 0 5.9s4.3 3.3 5.6 2.3c1.6-1.3 1.6-3.9 0-6.2-1.4-2.3-4-3.3-5.6-2"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://www.linkedin.com/in/daniel-dayan-a66322352/" target="_blank" rel="noopener" title="LinkedIn" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 448 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M416 32H31.9C14.3 32 0 46.5 0 64.3v383.4C0 465.5 14.3 480 31.9 480H416c17.6 0 32-14.5 32-32.3V64.3c0-17.8-14.4-32.3-32-32.3M135.4 416H69V202.2h66.5V416zM102.2 96a38.5 38.5 0 1 1 0 77 38.5 38.5 0 1 1 0-77m282.1 320h-66.4V312c0-24.8-.5-56.7-34.5-56.7-34.6 0-39.9 27-39.9 54.9V416h-66.4V202.2h63.7v29.2h.9c8.9-16.8 30.6-34.5 62.9-34.5 67.2 0 79.7 44.3 79.7 101.9z"/></svg>
+    </a>
+  
+    
+    
+    
+    
+    <a href="https://xxdndxx.github.io" target="_blank" rel="noopener" title="Portfolio" class="md-social__link">
+      <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512"><!--! Font Awesome Free 7.1.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license/free (Icons: CC BY 4.0, Fonts: SIL OFL 1.1, Code: MIT License) Copyright 2025 Fonticons, Inc.--><path d="M351.9 280H161c2.9 64.5 17.2 123.9 37.5 167.4 11.4 24.5 23.7 41.8 35.1 52.4 11.2 10.5 18.9 12.2 22.9 12.2s11.7-1.7 22.9-12.2c11.4-10.6 23.7-28 35.1-52.4 20.3-43.5 34.6-102.9 37.5-167.4zm-191-48h190.9c-2.8-64.5-17.1-123.9-37.4-167.4-11.4-24.4-23.7-41.8-35.1-52.4C268.1 1.7 260.4 0 256.4 0s-11.7 1.7-22.9 12.2c-11.4 10.6-23.7 28-35.1 52.4-20.3 43.5-34.6 102.9-37.5 167.4m-48 0c3.5-85.6 25.6-165.1 57.9-217.3C78.7 47.3 10.9 131.2 1.5 232zM1.5 280c9.4 100.8 77.2 184.7 169.3 217.3-32.3-52.2-54.4-131.7-57.9-217.3zm398.4 0c-3.5 85.6-25.6 165.1-57.9 217.3 92.1-32.7 159.9-116.5 169.3-217.3zm111.4-48C501.9 131.2 434.1 47.3 342 14.7c32.3 52.2 54.4 131.7 57.9 217.3z"/></svg>
+    </a>
+  
+</div>
+      
+    </div>
+  </div>
+</footer>
+      
+    </div>
+    <div class="md-dialog" data-md-component="dialog">
+      <div class="md-dialog__inner md-typeset"></div>
+    </div>
+    
+    
+    
+      
+      
+      <script id="__config" type="application/json">{"annotate": null, "base": "../../..", "features": ["navigation.tabs", "navigation.sections", "navigation.indexes", "navigation.top", "navigation.footer", "toc.follow", "search.suggest", "search.highlight", "search.share", "content.code.copy", "content.tabs.link"], "search": "../../../assets/javascripts/workers/search.2c215733.min.js", "tags": null, "translations": {"clipboard.copied": "Copied to clipboard", "clipboard.copy": "Copy to clipboard", "search.result.more.one": "1 more on this page", "search.result.more.other": "# more on this page", "search.result.none": "No matching documents", "search.result.one": "1 matching document", "search.result.other": "# matching documents", "search.result.placeholder": "Type to start searching", "search.result.term.missing": "Missing", "select.version": "Select version"}, "version": null}</script>
+    
+    
+      <script src="../../../assets/javascripts/bundle.d7400e89.min.js"></script>
+      
+        <script src="../../../javascripts/app.js"></script>
+      
+    
+  </body>
+</html>
